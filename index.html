@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jackfinite Craft</title>
+
+<!-- Firebase: global first-discovery tracking -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBPUBREL_KdrA29ezC9jBFMGeiRtTlpxio",
+    authDomain: "letsjattlethis.firebaseapp.com",
+    databaseURL: "https://letsjattlethis-default-rtdb.firebaseio.com",
+    projectId: "letsjattlethis",
+    storageBucket: "letsjattlethis.firebasestorage.app",
+    messagingSenderId: "847830788370",
+    appId: "1:847830788370:web:4ad68f74e224d960076bcb"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+
+  function toKey(name) {
+    return name.toLowerCase().replace(/[^a-z0-9]/g,'_').slice(0,100);
+  }
+
+  window._claimDiscovery = async (itemName, username) => {
+    const key  = toKey(itemName);
+    const path = ref(db, 'craft_discoveries/' + key);
+    try {
+      const snap = await get(path);
+      if (snap.exists()) {
+        return { isFirst: false, discoverer: snap.val().username };
+      }
+      await set(path, {
+        username: (username||'Anonymous').replace(/[<>"'&]/g,'').slice(0,30),
+        ts: Date.now()
+      });
+      return { isFirst: true, discoverer: username || 'Anonymous' };
+    } catch(e) {
+      return { isFirst: false, discoverer: null };
+    }
+  };
+</script>
+
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sidebar-width: 300px;
+    --border: #c8c8c8;
+    --item-border: #91a8c1;
+    --instance-bg: linear-gradient(0deg, #f7feff, #fff 70%);
+    --instance-bg-hover: linear-gradient(0deg, #d6fcff, #fff 90%);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Roboto', sans-serif;
+    background: #fff; color: #040404;
+    height: 100vh; overflow: hidden; user-select: none;
+  }
+  .title {
+    position: fixed; top: 12px;
+    right: calc(var(--sidebar-width) + 14px);
+    text-align: right; pointer-events: none; z-index: 5; line-height: 1.1;
+  }
+  .title-main { font-size: 1.75rem; font-weight: 300; letter-spacing: -0.5px; }
+  .title-sub  { font-size: 1.75rem; font-weight: 700; }
+
+  #canvas {
+    position: fixed; top: 0; left: 0;
+    width: calc(100% - var(--sidebar-width));
+    height: 100vh; overflow: hidden; background: #fff;
+  }
+
+  .instance {
+    position: absolute; display: flex; align-items: center;
+    background: var(--instance-bg);
+    border: 2px solid var(--item-border); border-radius: 10px;
+    padding: 0 18px; height: 78px;
+    white-space: nowrap; cursor: grab; z-index: 11;
+    animation: scaleIn 0.2s cubic-bezier(0.34,1.56,0.64,1);
+    will-change: transform;
+  }
+  @keyframes scaleIn {
+    from { transform: scale(0.4); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+  .instance:hover, .instance.selected {
+    background: var(--instance-bg-hover); border-color: var(--item-border);
+  }
+  .instance.combining { opacity: 0.6; pointer-events: none; }
+  .instance-emoji { font-size: 38px; margin-right: 10px; pointer-events: none; }
+  .instance-text  { font-size: 34px; pointer-events: none; font-weight: 400; }
+
+  #sidebar {
+    position: fixed; top: 0; right: 0;
+    width: var(--sidebar-width); height: 100vh;
+    border-left: 1px solid var(--border); background: #fff;
+    display: flex; flex-direction: column; z-index: 10; overflow: hidden;
+  }
+  .items-wrap {
+    flex: 1; overflow-y: auto; padding: 8px;
+    display: flex; flex-wrap: wrap; align-content: flex-start;
+  }
+  .items-wrap::-webkit-scrollbar { width: 4px; }
+  .items-wrap::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+  .sidebar-item {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #fff; border: 1px solid var(--border); border-radius: 5px;
+    padding: 5px 10px; margin: 4px; font-size: 13.5px;
+    cursor: grab; white-space: nowrap; transition: background 0.1s;
+  }
+  .sidebar-item:hover {
+    background: linear-gradient(0deg, #f0feff, #fff 80%);
+    border-color: var(--item-border);
+  }
+  .sidebar-item.dragging-from-sidebar { opacity: 0.4; }
+
+  .sidebar-bottom { flex-shrink: 0; border-top: 1px solid var(--border); }
+  .sort-tabs {
+    display: grid; grid-template-columns: 1fr 1fr 36px;
+    gap: 4px; padding: 0 8px; cursor: pointer;
+  }
+  .sort-tab {
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+    font-size: 13px; height: 30px;
+    border: 1px solid var(--border); border-bottom: none;
+    border-radius: 8px 8px 0 0; transform: translateY(1px);
+    background: #fff; color: #444;
+  }
+  .sort-tab:hover  { background: #f5feff; }
+  .sort-tab.active { background: linear-gradient(0deg, #d6fcff, #fff 90%); }
+  .search-row {
+    display: flex; align-items: center;
+    border-top: 1px solid var(--border); position: relative;
+  }
+  .search-icon { position: absolute; left: 10px; font-size: 15px; color: #aaa; pointer-events: none; }
+  .search-input {
+    width: 100%; border: none; outline: none;
+    font-size: 14px; font-family: 'Roboto', sans-serif;
+    height: 40px; padding: 0 12px 0 34px; color: #040404; background: transparent;
+  }
+  .search-input::placeholder { color: #aaa; }
+
+  .bottom-controls {
+    position: fixed; bottom: 10px; right: calc(var(--sidebar-width) + 14px);
+    display: flex; gap: 18px; align-items: center; z-index: 5; opacity: 0.7;
+  }
+  .ctrl-btn {
+    cursor: pointer; font-size: 18px; background: none; border: none;
+    padding: 4px; color: #555; transition: transform 0.1s;
+  }
+  .ctrl-btn:hover { transform: scale(1.1); color: #000; }
+  .item-count {
+    position: fixed; bottom: 10px; left: 14px;
+    font-size: 12px; color: #aaa; z-index: 5; pointer-events: none;
+  }
+
+  .result-toast {
+    position: fixed; bottom: 28px; left: 50%;
+    transform: translateX(calc(-50% - var(--sidebar-width)/2)) scale(0);
+    background: #fff; border: 1px solid var(--item-border); border-radius: 10px;
+    padding: 10px 22px; text-align: center; z-index: 200;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    pointer-events: none; white-space: nowrap;
+  }
+  .result-toast.show { transform: translateX(calc(-50% - var(--sidebar-width)/2)) scale(1); }
+  .result-toast-emoji { font-size: 1.8rem; }
+  .result-toast-name  { font-size: 1rem; font-weight: 500; margin-top: 2px; }
+  .result-toast-combo { font-size: 0.75rem; color: #888; margin-top: 2px; }
+  .first-disc      { font-size: 0.7rem; color: #888; margin-top: 3px; }
+  .first-disc span { background: #fffbe6; border: 1px solid #ffe066; border-radius: 4px; padding: 1px 6px; }
+  .first-disc.global span { background: #fff0f0; border-color: #f5a0a0; color: #900; }
+
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+    display: flex; align-items: center; justify-content: center; z-index: 300;
+  }
+  .modal {
+    background: #fff; border: 1px solid var(--border); border-radius: 12px;
+    padding: 28px 32px; max-width: 360px; width: 90%; text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  }
+  .modal h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
+  .modal p  { font-size: 13px; color: #666; margin-bottom: 16px; line-height: 1.5; }
+  .modal input {
+    width: 100%; border: 1px solid var(--border); border-radius: 6px;
+    padding: 8px 12px; font-size: 14px; font-family: 'Roboto', sans-serif;
+    outline: none; margin-bottom: 12px;
+  }
+  .modal input:focus { border-color: var(--item-border); }
+  .modal-btn {
+    width: 100%; background: #1a73e8; color: #fff; border: none;
+    border-radius: 6px; padding: 9px; font-size: 14px;
+    font-family: 'Roboto', sans-serif; cursor: pointer;
+  }
+  .modal-btn:hover { background: #1558b0; }
+  .modal-skip { font-size: 12px; color: #aaa; margin-top: 10px; cursor: pointer; }
+  .modal-skip:hover { color: #555; }
+
+  .ghost {
+    position: fixed; display: flex; align-items: center;
+    background: var(--instance-bg-hover); border: 2px solid var(--item-border);
+    border-radius: 10px; padding: 0 18px; height: 78px;
+    white-space: nowrap; pointer-events: none; z-index: 999; opacity: 0.85;
+  }
+  .ghost-emoji { font-size: 38px; margin-right: 10px; }
+  .ghost-text  { font-size: 34px; font-weight: 400; }
+</style>
+</head>
+<body>
+
+<div class="title">
+  <div class="title-main">Jackfinite</div>
+  <div class="title-sub">Craft</div>
+</div>
+
+<div id="canvas"></div>
+
+<div id="sidebar">
+  <div class="items-wrap" id="itemsList"></div>
+  <div class="sidebar-bottom">
+    <div class="sort-tabs">
+      <div class="sort-tab active" id="tabDisc"><span>✨</span> Discoveries</div>
+      <div class="sort-tab"        id="tabTime"><span>🕐</span> Time</div>
+      <div class="sort-tab"        id="tabTrash">🗑️</div>
+    </div>
+    <div class="search-row">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="searchInput" placeholder="Search items..." />
+    </div>
+  </div>
+</div>
+
+<div class="result-toast" id="resultToast">
+  <div class="result-toast-emoji" id="rEmoji"></div>
+  <div class="result-toast-name"  id="rName"></div>
+  <div class="result-toast-combo" id="rCombo"></div>
+  <div class="first-disc" id="rFirst" style="display:none"></div>
+</div>
+<div class="item-count" id="itemCount">4 elements</div>
+
+<div class="bottom-controls">
+  <button class="ctrl-btn" id="soundBtn">🔊</button>
+  <button class="ctrl-btn" id="clearBtn">🧹</button>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div style="font-size:2rem;margin-bottom:8px">🧪</div>
+    <h2>Set a username</h2>
+    <p>Claim <strong>global first discoveries</strong> — be the first in the world to find a combination!</p>
+    <input type="text" id="usernameInput" placeholder="Your username…" maxlength="30" />
+    <button class="modal-btn" id="modalConfirm">Start Crafting →</button>
+    <div class="modal-skip" id="modalSkip">Skip (play anonymously)</div>
+  </div>
+</div>
+
+<script>
+
+function getName(s) {
+  
+  return s.replace(/^[^A-Za-z0-9]+/, '').trim();
+}
+function getEmoji(s) {
+  const name = getName(s);
+  return s.slice(0, s.length - name.length).trim() || '✨';
+}
+
+const RAW = [
+  
+  ["💧Water","💧Water","🌊Ocean"],
+  ["🔥Fire","🔥Fire","🌋Volcano"],
+  ["🌬️Wind","🌬️Wind","🌪️Tornado"],
+  ["🌍Earth","🌍Earth","⛰️Mountain"],
+  ["💧Water","🔥Fire","♨️Steam"],
+  ["💧Water","🌬️Wind","🌊Wave"],
+  ["💧Water","🌍Earth","🌱Plant"],
+  ["🔥Fire","🌬️Wind","🔥Wildfire"],
+  ["🔥Fire","🌍Earth","🌋Lava"],
+  ["🌬️Wind","🌍Earth","🌪️Dust Storm"],
+
+  
+  ["🌊Ocean","🌊Ocean","🌊Deep Ocean"],
+  ["🌊Ocean","🌬️Wind","🌊Waves"],
+  ["🌊Ocean","🌍Earth","🏝️Island"],
+  ["🌊Ocean","🔥Fire","🌫️Sea Steam"],
+  ["🌊Ocean","💧Water","🐟Fish"],
+  ["🌊Ocean","☁️Cloud","🌧️Rainstorm"],
+  ["🌊Ocean","🌱Plant","🌿Seaweed"],
+  ["🌊Wave","🌬️Wind","🌊Ocean"],
+  ["🌊Wave","🌍Earth","🏖️Beach"],
+  ["🏖️Beach","🔥Fire","🏜️Desert"],
+  ["🏖️Beach","🌬️Wind","🏝️Island"],
+  ["🏝️Island","🌬️Wind","🌴Palm Tree"],
+  ["🏝️Island","🔥Fire","🌋Volcanic Island"],
+  ["🌋Lava","💧Water","🪨Stone"],
+  ["🌋Lava","🌬️Wind","🌋Lava Flow"],
+  ["🌋Lava","🌍Earth","🌋Volcano"],
+  ["🌋Lava","🌋Lava","🌋Super Volcano"],
+  ["🌋Lava","🌱Plant","🌋Scorched Earth"],
+  ["🌋Volcano","💧Water","🌫️Steam Cloud"],
+  ["🌋Volcano","🌍Earth","🏔️Crater"],
+  ["⛰️Mountain","💧Water","💧Waterfall"],
+  ["⛰️Mountain","🌬️Wind","❄️Snow"],
+  ["⛰️Mountain","🔥Fire","🌋Volcano"],
+  ["🪨Stone","🪨Stone","🏔️Boulder"],
+  ["🪨Stone","💧Water","🏖️Sand"],
+  ["🪨Stone","🔥Fire","🪨Flint"],
+  ["🪨Stone","🌬️Wind","🏜️Eroded Rock"],
+  ["🪨Stone","🌍Earth","⛰️Mountain"],
+  ["🪨Stone","🌱Plant","🌿Mossy Stone"],
+  ["🏖️Sand","🔥Fire","🪟Glass"],
+  ["🏖️Sand","💧Water","🏖️Beach"],
+  ["🏖️Sand","🌬️Wind","🌪️Sandstorm"],
+  ["❄️Snow","❄️Snow","🧊Ice"],
+  ["❄️Snow","🔥Fire","💧Water"],
+  ["❄️Snow","🌬️Wind","❄️Blizzard"],
+  ["🧊Ice","🔥Fire","💧Water"],
+  ["🧊Ice","💧Water","🌊Glacier"],
+  ["🧊Ice","🌬️Wind","❄️Blizzard"],
+  ["💧Water","🧊Ice","🌊Glacier"],
+  ["🌪️Dust Storm","💧Water","🌧️Rain"],
+  ["🌪️Tornado","🌍Earth","🌪️Dust Devil"],
+  ["🌪️Tornado","💧Water","🌀Hurricane"],
+  ["🌪️Tornado","🏠House","🌪️Blown Roof"],
+  ["♨️Steam","🌬️Wind","☁️Cloud"],
+  ["♨️Steam","💧Water","☁️Condensation"],
+  ["♨️Steam","🔥Fire","💥Explosion"],
+  ["♨️Steam","🌍Earth","🌋Geothermal"],
+  ["☁️Cloud","☁️Cloud","🌧️Heavy Rain"],
+  ["☁️Cloud","💧Water","🌧️Rain"],
+  ["☁️Cloud","🔥Fire","⚡Lightning"],
+  ["☁️Cloud","🌬️Wind","⛈️Storm"],
+  ["☁️Cloud","🌍Earth","🌧️Rain"],
+  ["⚡Lightning","💧Water","⚡Electrocution"],
+  ["⚡Lightning","🌍Earth","🔋Energy"],
+  ["⚡Lightning","🪨Stone","🪨Fulgurite"],
+  ["🌧️Rain","🌍Earth","🌱Plant"],
+  ["🌧️Rain","🌬️Wind","🌧️Storm"],
+  ["🌧️Rain","🔥Fire","💨Steam Puff"],
+  ["🌧️Rain","☁️Cloud","🌧️Heavy Rain"],
+  ["🌱Plant","🌱Plant","🌿Bush"],
+  ["🌱Plant","💧Water","🥬Vegetation"],
+  ["🌱Plant","🌬️Wind","🌳Tree"],
+  ["🌱Plant","🔥Fire","🌾Ash"],
+  ["🌱Plant","🌍Earth","🌱Soil"],
+  ["🌱Plant","🏖️Sand","🌵Cactus"],
+  ["🌵Cactus","💧Water","🌺Flower"],
+  ["🌺Flower","🌬️Wind","🐝Bee"],
+  ["🌺Flower","☀️Sun","🌻Sunflower"],
+  ["🌺Flower","💧Water","🌷Rose"],
+  ["🐝Bee","🌺Flower","🍯Honey"],
+  ["🥬Vegetation","🌍Earth","🌾Field"],
+  ["🌳Tree","🌳Tree","🌲Forest"],
+  ["🌳Tree","🌳Tree","🌲Dense Forest"],
+  ["🌳Tree","💧Water","🌲Rainforest"],
+  ["🌳Tree","🔥Fire","🔥Campfire"],
+  ["🌳Tree","🌬️Wind","🍂Falling Leaves"],
+  ["🌳Tree","🌍Earth","🌲Forest"],
+  ["🌳Tree","⚡Lightning","🌳Struck Tree"],
+  ["🌳Tree","🪓Axe","🪵Log"],
+  ["🌲Forest","🌲Forest","🌲Ancient Forest"],
+  ["🌲Forest","🔥Fire","🔥Forest Fire"],
+  ["🌲Forest","🌧️Rain","🌳Rainforest"],
+  ["🌲Forest","🌬️Wind","🍃Rustling Forest"],
+  ["🌾Field","🌬️Wind","🌾Rustling Wheat"],
+  ["🌾Field","💧Water","🌾Flooded Field"],
+  ["🌾Field","🔥Fire","🌾Burnt Field"],
+  ["🌾Field","🌍Earth","🚜Farmland"],
+  ["🌾Rustling Wheat","🔥Fire","🍞Bread"],
+  ["🌾Rustling Wheat","💧Water","🌾Soaked Wheat"],
+  ["🍞Bread","🔥Fire","🍞Toast"],
+  ["🌿Bush","💧Water","🌳Tree"],
+  ["🌿Bush","🔥Fire","🌾Ash"],
+  ["🌿Swamp","🌱Plant","🍄Mushroom"],
+  ["🌫️Mist","🌍Earth","🍄Mushroom"],
+  ["💨Smoke","☁️Cloud","🌫️Fog"],
+  ["💨Smoke","💨Smoke","🌫️Smog"],
+  ["💨Smoke","💧Water","🌧️Acid Rain"],
+  ["💨Smoke","🌬️Wind","🌫️Fog"],
+  ["🔥Campfire","🌬️Wind","💨Smoke"],
+  ["🔥Campfire","💧Water","💨Extinguished Fire"],
+  ["🔥Campfire","🌍Earth","🪨Fire Pit"],
+  ["🔥Campfire","🌱Plant","💨Smoke"],
+
+  
+  ["🪨Mud","🔥Fire","🧱Brick"],
+  ["🧱Brick","🧱Brick","🏠House"],
+  ["🧱Brick","💧Water","🧱Wet Brick"],
+  ["🧱Brick","🔥Fire","🧱Fired Brick"],
+  ["🧱Brick","🌬️Wind","💨Crumbled Wall"],
+  ["🧱Brick","🌍Earth","🏗️Foundation"],
+  ["🏠House","🏠House","🏘️Village"],
+  ["🏠House","🌳Tree","🏡Home"],
+  ["🏠House","💧Water","🏊Pool"],
+  ["🏠House","🔥Fire","🏠House Fire"],
+  ["🏠House","🌬️Wind","🌪️Blown Roof"],
+  ["🏠House","🌍Earth","🏘️Settlement"],
+  ["🏠House","👥Community","🏘️Neighbourhood"],
+  ["🏡Home","🏡Home","🏘️Neighbourhood"],
+  ["🏡Home","💧Water","🌧️Leaky Roof"],
+  ["🏡Home","🔥Fire","🏚️Burnt Home"],
+  ["🏡Home","🌬️Wind","📺YouTube"],
+  ["🏰Castle","🏰Castle","👑Kingdom"],
+  ["🏰Castle","💧Water","🏰Moat"],
+  ["🏰Castle","🔥Fire","🏚️Siege"],
+  ["🔩Metal","🔩Metal","⚙️Machine"],
+  ["🔩Metal","🔥Fire","🛠️Tool"],
+  ["🔩Metal","💧Water","🦠Rust"],
+  ["🔩Metal","🌬️Wind","⚙️Steam Engine"],
+  ["🛠️Tool","🌳Tree","🪚Wood Plank"],
+  ["🪚Wood Plank","🛠️Tool","📦Box"],
+  ["🪟Glass","🌬️Wind","🪟Window"],
+  ["🪟Glass","🌍Earth","🏺Bottle"],
+
+  
+  ["🥛Milk","🔥Fire","🧀Cheese"],
+  ["🧀Cheese","🍞Bread","🥪Sandwich"],
+  ["🍯Honey","🌾Field","🍰Cake"],
+  ["🍰Cake","🔥Fire","🕯️Birthday Candles"],
+  ["🥚Egg","🔥Fire","🍳Fried Egg"],
+  ["🐔Chicken","🥚Egg","🍗Chicken & Egg"],
+  ["🍕Pizza","🔥Fire","🍕Hot Pizza"],
+  ["🍕Pizza","🍍Pineapple","🍍Pineapple Pizza"],
+  ["🍍Pineapple","🍕Pizza","🍍Pizza Debate"],
+  ["🍍Pizza Debate","🔥Fire","🔥Spicy Debate"],
+
+  
+  ["🐟Fish","🐟Fish","🐠School of Fish"],
+  ["🐟Fish","🔥Fire","🍣Cooked Fish"],
+  ["🐟Fish","🌊Ocean","🐠Tropical Fish"],
+  ["🐄Cow","🌾Field","🐔Chicken"],
+  ["🐄Cow","🌱Plant","🥛Milk"],
+  ["🐝Bee","🐝Bee","🍯Beehive"],
+  ["🐶Dog","🐶Dog","🐕Dog Pack"],
+  ["🐕Kong","🐕Flossy","🐾Dog Duo"],
+  ["🐾Dog Duo","📺YouTube","🐕Dog Video"],
+  ["🐾Dog Duo","📹Video","🐶Dog Vlog"],
+  ["🦴Bone","🐶Dog","🐕Happy Dog"],
+
+  
+  ["🔋Energy","⚙️Machine","🤖Robot"],
+  ["🔋Energy","💧Water","⚡Electricity"],
+  ["⚡Electricity","⚙️Machine","💻Computer"],
+  ["⚡Electricity","💻Computer","🌐Internet"],
+  ["💻Computer","💻Computer","🖥️Server"],
+  ["💻Computer","🌐Internet","📡Signal"],
+  ["💻Computer","🌐Internet","📱Website"],
+  ["📱Website","📺YouTube","📺YouTube"],
+  ["📡Signal","📺YouTube","🔔Notification"],
+  ["📡Signal","📱Website","💬Comment"],
+  ["🌐Internet","🌐Internet","🕸️Web Empire"],
+  ["🌐Internet","💻Computer","📱Website"],
+  ["🌐Internet","📺YouTube","🎬Content"],
+
+  
+  ["📺YouTube","📺YouTube","📡Livestream"],
+  ["📺YouTube","🎥Channel","📺Channel"],
+  ["📺YouTube","🌬️Wind","🎥Channel"],
+  ["📺YouTube","💬Comment","👍Like Button"],
+  ["📺YouTube","▶️Subscriber","🔔Notification Bell"],
+  ["📺YouTube","📊Analytics","📊YouTube Studio"],
+  ["📺YouTube","📡Signal","📡Livestream"],
+  ["📺YouTube","🎮Game","🎮Gaming Channel"],
+  ["📺YouTube","🍳Cooking","🍳Cooking Channel"],
+  ["📺YouTube","🖼️Thumbnail","🎥YouTube Video"],
+  ["📺YouTube","🌍Earth","👥r/jacksucksatlife"],
+  ["🎥Channel","🎥Channel","📺Network"],
+  ["🎥Channel","💧Water","📹Video"],
+  ["📹Video","📹Video","🎬Series"],
+  ["📹Video","🔥Fire","🔥Viral Video"],
+  ["🔥Viral Video","🎥Channel","🧑‍🦱JackSucksAtLife"],
+  ["📈Algorithm","📈Algorithm","🤖AI Algorithm"],
+  ["▶️Subscriber","▶️Subscriber","👥Fanbase"],
+  ["👤User","👤User","👥Community"],
+  ["🎬Content","🔥Fire","🔥Trending"],
+  ["🔥Trending","📺YouTube","📈Algorithm"],
+
+  
+  ["🧑‍🦱JackSucksAtLife","📺YouTube","📺JackSucksAtLife"],
+  ["🧑‍🦱JackSucksAtLife","📺YouTube","📺No Context JackSucksAtLife"],
+  ["📺JackSucksAtLife","🎥Video","📺JackSucksAtStuff"],
+  ["📺JackSucksAtLife","🌍Earth","🌍JackSucksAtGeography"],
+  ["📺JackSucksAtLife","🌐Internet","🇪🇸JackSucksAtEspañol"],
+  ["📺JackSucksAtLife","▶️Subscriber","🚫Don't Subscribe"],
+  ["📺JackSucksAtLife","🎮Game","🎮JackSucksAtPopUpPirate"],
+  ["📺JackSucksAtLife","📦Collection","🏆Play Button Collection"],
+  ["📺JackSucksAtLife","🌱Plant","🌳Wee Wee Bush"],
+  ["📺JackSucksAtLife","🔥Fire","🎭Pink Wig Promise"],
+  ["📺JackSucksAtLife","💧Water","🐶Kong"],
+  ["📺JackSucksAtLife","⚡Electricity","🚗Tesla"],
+  ["📺JackSucksAtLife","💻Computer","✂️Kai the Editor"],
+  ["📺JackSucksAtLife","❤️Love","❤️Becky"],
+  ["📺JackSucksAtLife","📺YouTube","📺Jack Massey Welsh"],
+  ["📺JackSucksAtLife","📺JackSucksAtLife","📺Jack Highlights"],
+  ["📺JackSucksAtLife","🧑‍🦱JackSucksAtLife","📺JSAL Legacy"],
+  ["🧑‍🦱JackSucksAtLife","📺JackSucksAtLife","📺JSAL Legacy"],
+  ["🧑‍🦱JackSucksAtLife","📺YouTube","📺No Context JackSucksAtLife"],
+  ["🧑‍🦱JackSucksAtLife","🌍Earth","🌍JackSucksAtGeography"],
+  ["🧑‍🦱JackSucksAtLife","🌬️Wind","🚗Tesla"],
+  ["🧑‍🦱JackSucksAtLife","🎮Game","🎮Skycade"],
+  ["🧑‍🦱JackSucksAtLife","👬Friend","👬Jack & Oscar"],
+  ["🧑‍🦱JackSucksAtLife","👩Becky","💑Jack & Becky"],
+  ["🧑‍🦱JackSucksAtLife","🧑‍💻Kai","✂️Kai the Editor"],
+  ["🧑‍🦱JackSucksAtLife","🌳Tree","🌳Wee Wee Bush"],
+  ["🧑‍🦱JackSucksAtLife","🌬️Wind","🎭Pink Wig Promise"],
+  ["🧑‍🦱JackSucksAtLife","🐶Dog","🐕Kong"],
+  ["🧑‍🦱JackSucksAtLife","👑YouTube Legend","📺JSAL Legacy"],
+  ["🧑‍🦱JackSucksAtLife","📦Play Button Collection","📦Jack Shelf"],
+  ["🧑‍🦱JackSucksAtLife","💎Diamond Play Button","💎Jack Diamond"],
+  ["🧑‍🦱JackSucksAtLife","🔴Red Diamond Play Button","🔴Jack Red Diamond"],
+  ["📺Jack Massey Welsh","🚗Tesla","🚗Tesla Video"],
+  ["📺JackSucksAtGeography","🌍Earth","🗺️World Map"],
+  ["🌍JackSucksAtGeography","🌍Earth","🗺️World Map"],
+  ["🌍JackSucksAtGeography","🗺️World Map","🧠Geography Quiz"],
+  ["🌍JackSucksAtGeography","🧠Geography Quiz","🌎Country Guessing"],
+  ["🌍JackSucksAtGeography","🌎Country Guessing","🏁Flag Quiz"],
+  ["🌍JackSucksAtGeography","📺YouTube","🌍Geography Channel"],
+  ["🌍JackSucksAtGeography","🗺️Map Challenge","🌎Country Quiz"],
+  ["🌍JackSucksAtGeography","🗺️World Map","🌎Geo Master"],
+  ["🏆Geography Champion","📺YouTube","🧑‍🦱JackSucksAtGeography"],
+
+  
+  ["🏆Play Button","📺YouTube","🥈Silver Play Button"],
+  ["🥈Silver Play Button","🏆Play Button","🥇Gold Play Button"],
+  ["🥇Gold Play Button","🏆Play Button","💎Diamond Play Button"],
+  ["💎Diamond Play Button","🏆Play Button","🔴Red Diamond Play Button"],
+  ["🥈Silver Play Button","📺YouTube","📈100K Subscribers"],
+  ["🥇Gold Play Button","📺YouTube","📈1M Subscribers"],
+  ["💎Diamond Play Button","📺YouTube","📈10M Subscribers"],
+  ["🔴Red Diamond Play Button","📺YouTube","📈100M Subscribers"],
+  ["📦Play Button Collection","🥈Silver Play Button","📦More Play Buttons"],
+  ["📦More Play Buttons","🥇Gold Play Button","📦Huge Play Button Collection"],
+  ["📦Huge Play Button Collection","💎Diamond Play Button","📦Ultimate Play Button Shelf"],
+  ["📦Play Button Collection","📹Video","🎥Play Button Tour"],
+  ["📦Play Button Collection","👑YouTube Legend","💎Creator Museum"],
+  ["📦Play Button Collection","🔥Fire","🔥Play Button Viral"],
+
+  
+  ["🎮Skycade","🧑‍🦱JackSucksAtLife","🖥️Minecraft Server"],
+  ["🎮Skycade","⛏️Minecraft","🧱Skycade Base"],
+  ["🎮Skycade","👥Community","🎮Skycade Players"],
+  ["🎮Skycade","📺YouTube","🎮Skycade Video"],
+  ["🎮Skycade","🎮Skycade","🎮Skycade 2.0"],
+  ["🖥️Minecraft Server","🎮Game","⛏️Minecraft"],
+  ["⛏️Minecraft","🌍Earth","🧱Block"],
+  ["⛏️Minecraft","⛏️Minecraft","🌍Minecraft World"],
+  ["🧱Block","🧱Block","🏗️Minecraft Build"],
+  ["🏗️Minecraft Build","📹Video","🎥Minecraft Video"],
+  ["🧱Skycade Base","🏗️Minecraft Build","🏰Skycade Castle"],
+  ["🏰Skycade Castle","📹Video","🎥Castle Build Video"],
+
+  
+  ["👥r/jacksucksatlife","👥r/jacksucksatlife","📌Mega Thread"],
+  ["👥r/jacksucksatlife","🌬️Wind","💬Reddit Thread"],
+  ["👥r/jacksucksatlife","🔥Fire","🧑LizardLava"],
+  ["👥r/jacksucksatlife","🌍Earth","🧑FreddieThePebble"],
+  ["👥r/jacksucksatlife","🌬️Wind","🧑RedditReviver"],
+  ["👥r/jacksucksatlife","💧Water","🧑ReviveTheReddit"],
+  ["👥r/jacksucksatlife","📺YouTube","🧑NataliaSucks"],
+  ["👥r/jacksucksatlife","🌪️Dust Storm","🧑StraightBoy69420"],
+  ["👥r/jacksucksatlife","📹Video","🧑LifeSucksAtStuff"],
+  ["👥r/jacksucksatlife","🌳Tree","🧑TomE41111"],
+  ["👥r/jacksucksatlife","🔥Campfire","🧑ZachEchano"],
+  ["👥r/jacksucksatlife","📦Play Button Collection","🧑JessSucksAtLife"],
+  ["👥r/jacksucksatlife","🌍JackSucksAtGeography","🧑tillzealousidea8282"],
+  ["👥r/jacksucksatlife","🌱Plant","🧑ChickenGirlBelle"],
+  ["👥r/jacksucksatlife","🧱Brick","🧑VaseSpecific"],
+  ["👥r/jacksucksatlife","🏆Geography Champion","🧑REMINGTONTHETHIRD"],
+  ["👥r/jacksucksatlife","⚡Electric Car","🧑cybermxn"],
+  ["👥r/jacksucksatlife","📢Viral Moment","🧑JustAlfie"],
+  ["👥r/jacksucksatlife","📺YouTube","🧑DeadSubDoc"],
+  ["👥r/jacksucksatlife","🗺️Map Challenge","🧑LeioCera"],
+  ["👥r/jacksucksatlife","🎮Pop Up Pirate","🧑GamingYoutube14"],
+  ["👥r/jacksucksatlife","🌫️Mist","🧑SappySnow"],
+  ["👥r/jacksucksatlife","🧱House","🧑DaxTheDrawer"],
+  ["💬Reddit Thread","🔥Fire","🔥Reddit Drama"],
+  ["💬Reddit Thread","💬Reddit Thread","🔥Reddit War"],
+  ["🔥Reddit Drama","👥r/jacksucksatlife","🧑XPineAppleOnPiZZA"],
+  ["🧑DeadSubDoc","🌐Website","🌐Jack.fun"],
+  ["🌐Jack.fun","📺YouTube","🎮Website Games"],
+  ["🎮Website Games","🌬️Wind","🕹️Browser Game"],
+  ["🧑FreddieThePebble","🧑‍🦱JackSucksAtLife","🪞Narcissist"],
+  ["🧑LizardLava","📦Play Button Collection","🔴Red Diamond Play Button Replica"],
+  ["🧑DaxTheDrawer","🧑‍🦱JackSucksAtLife","🎤Jack Manifold"],
+  ["🧑NataliaSucks","🇪🇸JackSucksAtEspañol","😂I've not really had that much se-"],
+  ["😂I've not really had that much se-","📹Video","🎞️Legendary Clip"],
+  ["💩Turdboi420","📺YouTube","💩Turdboi Channel"],
+  ["💩Turdboi420","🔥Fire","💩Legendary Meme"],
+  ["💩Legendary Meme","💩Turdboi420","💩Ultimate Meme"],
+  ["💩Ultimate Meme","💩Turdboi420","💩Meme King"],
+
+  
+  ["🚗Tesla","🚗Tesla","🚗Tesla Fleet"],
+  ["🚗Tesla","💧Water","🚘Car Channel"],
+  ["🚗Tesla","🔥Fire","🔋Battery"],
+  ["🚗Tesla","⚡Electric Car","🚗Tesla Model S"],
+  ["🚗Tesla","📺YouTube","🚗Car Channel"],
+  ["🚘Car Channel","📺YouTube","📺Jack Massey Welsh"],
+  ["🔋Battery","🌬️Wind","⚡Electric Car"],
+  ["🔋Battery","🔋Battery","⚡Battery Pack"],
+
+  
+  ["🌳Wee Wee Bush","📹Video","😂Running Joke"],
+  ["🌳Wee Wee Bush","💧Water","🌳Watered Bush"],
+  ["🌳Wee Wee Bush","🌳Wee Wee Bush","🌳Wee Wee Forest"],
+  ["🌳Watered Bush","🌬️Wind","🍃Shaking Bush"],
+  ["🍃Shaking Bush","📹Video","😂Bush Clip"],
+  ["😂Running Joke","📺YouTube","🧠JSAL Lore"],
+
+  
+  ["🎭Pink Wig Promise","📺YouTube","🎬Legendary Bet"],
+  ["🎭Pink Wig Promise","👥r/jacksucksatlife","😂Pink Wig Meme"],
+  ["🎭Pink Wig Promise","🎭Pink Wig Promise","🎭Double Pink Wig"],
+  ["🎬Legendary Bet","🔥Fire","😂Iconic Moment"],
+  ["😂Iconic Moment","📹Video","🎞️JSAL Clip"],
+
+  
+  ["📈100M Subscribers","📺YouTube","🏆Mega Creator"],
+  ["🏆Mega Creator","📹Video","🎥Massive Upload"],
+  ["🎥Massive Upload","🔥Fire","🔥Trending Page"],
+  ["🔥Trending Page","📺YouTube","📊Analytics"],
+  ["📊Analytics","📹Video","📈Growth Chart"],
+  ["📈Growth Chart","📺YouTube","📉Sub Drop"],
+  ["🚀Viral Video","📺YouTube","🏆Play Button"],
+  ["🚀Viral Video","📺YouTube","📺Channel"],
+  ["📺Channel","▶️Subscriber","📈Algorithm"],
+  ["📈Algorithm","📺YouTube","📊Trending"],
+  ["📊Trending","⭐YouTuber","🚀Viral Video"],
+
+  
+  ["📢Viral Moment","📺YouTube","🧻Turdboi420"],
+  ["😂Random Clip","🌬️Wind","📢Viral Moment"],
+  ["📺No Context JackSucksAtLife","🔥Fire","😂Random Clip"],
+  ["🎮Pop Up Pirate","🔥Fire","💥Pirate Explosion"],
+  ["💥Pirate Explosion","📹Video","😂Game Night"],
+  ["🪞Narcissist","📺YouTube","🎬Self Aware Bit"],
+  ["🎬Self Aware Bit","📹Video","😂Meta Joke"],
+  ["😂Meta Joke","📺YouTube","🎞️Inside Reference"],
+  ["💑Jack & Becky","🏡Home","🏠Couple Vlog"],
+  ["🏠Couple Vlog","📺YouTube","🎬Lifestyle Channel"],
+  ["✂️Kai the Editor","📹Video","🎬Perfect Cut"],
+  ["🎬Perfect Cut","🔥Fire","🔥Funny Moment"],
+  ["👑YouTube Legend","📹Video","🎬Legendary Video"],
+  ["🎬Legendary Video","📺YouTube","🏆Iconic Upload"],
+  ["🏆Creator Award","📦Play Button Collection","🥇Gold Trophy"],
+  ["💎Creator Museum","📹Video","🎥Museum Tour"],
+
+  
+  ["🌍Earth","🌪️Tornado","🌍Atmosphere"],
+  ["🌍Atmosphere","🔥Fire","☀️Sun"],
+  ["☀️Sun","🌍Earth","🌎Planet"],
+  ["🌎Planet","🌎Planet","🌌Solar System"],
+  ["🌌Solar System","🌌Solar System","🌌Galaxy"],
+  ["⏳Time","🏰Castle","🏛️Ruins"],
+  ["⏳Time","🌱Plant","🌳Growth"],
+
+  
+  ["👤Human","🏠House","👨‍👩‍👧Family"],
+  ["👤Human","💻Computer","👨‍💻Programmer"],
+  ["👑King","👥Community","👑Kingdom"],
+  ["❤️Becky","🚧Traffic Cone","🎴Traffic Cone Becky"],
+  ["🚧Traffic Cone","📺YouTube","🎴Traffic Cone Becky"],
+  ["🐶Kong","🐶Dog","🐕Flossy"],
+  ["🐕Flossy","🏡Home","🐾Dog Chaos"],
+
+  
+  ["🧑‍🦱JackSucksAtLife","🌊Ocean","🏝️Jack Island"],
+  ["🧑‍🦱JackSucksAtLife","⛰️Mountain","⛰️Mountain Jack"],
+  ["🧑‍🦱JackSucksAtLife","🌧️Rain","🌧️Rainy Jack"],
+  ["🧑‍🦱JackSucksAtLife","🌪️Tornado","😵Jack Confusion"],
+  ["🧑‍🦱JackSucksAtLife","🌲Forest","🌲Forest Jack"],
+  ["🧑‍🦱JackSucksAtLife","🏜️Desert","🏜️Desert Jack"],
+  ["🧑‍🦱JackSucksAtLife","🍕Pizza","🍕Jack Orders Pizza"],
+  ["🧑‍🦱JackSucksAtLife","🧀Cheese","🧀Jack Loves Cheese"],
+  ["🧑‍🦱JackSucksAtLife","☕Coffee","☕Jack Needs Coffee"],
+  ["🧑‍🦱JackSucksAtLife","🤖Robot","🤖Jack Replaced by AI"],
+  ["🧑‍🦱JackSucksAtLife","🌌Solar System","🔭JackSucksAtAstronomy"],
+  ["🧑‍🦱JackSucksAtLife","♟️Chess","♟️Jack Sucks at Chess"],
+  ["🧑‍🦱JackSucksAtLife","🎸Guitar","🎸Jack Sucks at Guitar"],
+  ["🧑‍🦱JackSucksAtLife","💪Power","💪Big Daddy Jack"],
+  ["🧑‍🦱JackSucksAtLife","🚲Unicycle","🎴Jack On A Unicycle"],
+  ["🧑‍🦱JackSucksAtLife","⛏️Minecraft","🎴JackSucksAtMC"],
+  ["🧑‍🦱JackSucksAtLife","🐛Caterpillar","🎴Jackerpillar"],
+  ["🧑‍🦱JackSucksAtLife","🎨Pink","🎴Pink Hair Jack"],
+  ["🧑‍🦱JackSucksAtLife","🌱Plant","🎴Jack Humping Plant"],
+  ["🧑‍🦱JackSucksAtLife","🏠Attic","🎴The Attic Tour"],
+  ["🦆Duck","🔫Gun","🎴Ducks With Guns"],
+  ["💩Turdboi420","🚗Car","🎴The Turdboi-Mobile"],
+  ["🚽Toilet","🧑‍🦱JackSucksAtLife","🎴Toilet Mutant Jack"],
+  ["🌳Bush","😂Meme","🎴The Wee Wee Bush"],
+  ["🐶Kong","📹Video","📹Kong Video"],
+  ["🐕Flossy","📹Video","📹Flossy Video"],
+
+  
+  ["🗺️World Map","🌬️Wind","🧭Compass"],
+  ["🧭Compass","🌍Earth","🧭Explorer"],
+  ["🧭Explorer","📹Video","🎥Explorer Video"],
+  ["🌎Country Guessing","🔥Fire","🏆Geography Champion"],
+  ["🏁Flag Quiz","📺YouTube","🏁Flag Video"],
+  ["🏁Flag Quiz","🏁Flag Quiz","🏳️Flag Collection"],
+  ["🌎Geo Master","📹Video","🎥Geo Master Video"],
+  ["🎥Geo Master Video","🔥Fire","🔥Geo Viral"],
+  ["🔥Geo Viral","📺YouTube","📺Geo Champion"],
+  ["🎓Learning Channel","🌍JackSucksAtGeography","🌍Geography Lesson"],
+  ["🌍Geography Lesson","📹Video","🎥Geography Clip"],
+  ["🎥Geography Clip","🔥Fire","🔥Geography Viral"],
+  ["📺Geography Throwback","📹Video","🎥Throwback Video"],
+
+  
+  ["🎥YouTube Video","🔥Fire","🔥Trending Video"],
+  ["🔥Trending Video","📺YouTube","📈Algorithm Boost"],
+  ["📈Algorithm Boost","📹Video","🚀Exploding Channel"],
+  ["🚀Exploding Channel","📺YouTube","🌟Viral Creator"],
+  ["🌟Viral Creator","📹Video","🎥Massive Upload"],
+  ["🎥Massive Upload","🔥Fire","🔥Internet Sensation"],
+  ["🔥Internet Sensation","📺YouTube","👑YouTube Legend"],
+  ["📺JSAL Legacy","📹Video","🎥Legacy Video"],
+  ["🎥Legacy Video","🔥Fire","🔥Legacy Viral"],
+  ["🔥Legacy Viral","📺YouTube","📜Creator History"],
+  ["🏆Milestone","▶️Subscriber","🥈Silver Play Button"],
+  ["🏆Milestone","🥈Silver Play Button","🥇Gold Play Button"],
+  ["🏆Milestone","🥇Gold Play Button","💎Diamond Play Button"],
+  ["🏆Milestone","💎Diamond Play Button","🔴Red Diamond Play Button"],
+  ["📺Channel","📊Channel Stats","🏆Milestone"],
+
+  
+  ["🌾Rustling Wheat","🌍Earth","🌾Wheat Farm"],
+  ["🌾Rustling Wheat","💧Water","🌾Wet Wheat"],
+  ["🌾Rustling Wheat","🌬️Wind","🌾Blowing Wheat"],
+  ["🌾Rustling Wheat","☁️Cloud","🌾Rainy Wheat"],
+  ["🌱Seed","🔥Fire","🌾Ash"],
+  ["🌱Seed","☁️Cloud","🌧️Watered Seed"],
+  ["🌱Seed","🌬️Wind","🌾Scattered Seeds"],
+  ["🌱Seed","🌱Seed","🌿Garden"],
+  ["🌾Grass","💧Water","🌿Wet Grass"],
+  ["🌾Grass","🔥Fire","🌾Burnt Grass"],
+  ["🌾Grass","🌬️Wind","🍃Rustling Grass"],
+  ["🌾Grass","🌾Grass","🌿Meadow"],
+  ["🌾Grass","🌱Plant","🌿Lawn"],
+  ["🌫️Fog","💧Water","🌫️Dense Fog"],
+  ["🌫️Fog","🔥Fire","💨Steam"],
+  ["🌫️Fog","🌬️Wind","🌫️Clearing Fog"],
+  ["🌫️Fog","🌞Sun","🌤️Clearing Sky"],
+  ["🌫️Fog","🌍Earth","🌫️Ground Fog"],
+  ["🌾Ash","💧Water","🪨Soot"],
+  ["🌾Ash","🌬️Wind","💨Ash Cloud"],
+  ["🌾Ash","🌍Earth","🌱Fertile Soil"],
+  ["🌾Ash","🌾Ash","⬛Charcoal"],
+  ["🪨Mud","💧Water","🪨Wet Mud"],
+  ["🪨Mud","🌬️Wind","🪨Dry Mud"],
+  ["🪨Mud","🌍Earth","🌱Swamp"],
+  ["🪨Mud","🌱Plant","🌿Muddy Plant"],
+  ["🪨Mud","🪨Mud","🧱Clay"],
+  ["🥬Vegetation","💧Water","🌿Lush Vegetation"],
+  ["🥬Vegetation","🔥Fire","🌾Burnt Vegetation"],
+  ["🥬Vegetation","🌬️Wind","🍃Swaying Vegetation"],
+  ["🥬Vegetation","🌞Sun","🌿Thriving Vegetation"],
+  ["🥬Vegetation","🥬Vegetation","🌲Jungle"],
+  ["🥛Milk","💧Water","🥛Diluted Milk"],
+  ["🥛Milk","🌬️Wind","💨Spilt Milk"],
+  ["🥛Milk","🥛Milk","🧈Cream"],
+  ["🥛Milk","🍰Cake","🍰Milk Cake"],
+  ["🥛Milk","🍯Honey","🍯Honeyed Milk"],
+  ["🍯Honey","💧Water","🍵Honey Tea"],
+  ["🍯Honey","🔥Fire","🍯Warm Honey"],
+  ["🍯Honey","🌬️Wind","🍯Honey Pot"],
+  ["🍯Honey","🍯Honey","🍯Honeycomb"],
+  ["🍰Cake","💧Water","🍰Soggy Cake"],
+  ["🍰Cake","🌬️Wind","🎂Birthday Cake"],
+  ["🍰Cake","🍰Cake","🎂Wedding Cake"],
+  ["🍰Cake","🍯Honey","🍯Honey Cake"],
+  ["🌵Cactus","🌵Cactus","🏜️Cactus Field"],
+  ["🌵Cactus","🔥Fire","🏜️Burning Cactus"],
+  ["🌵Cactus","🌍Earth","🏜️Desert"],
+  ["🌵Cactus","🌬️Wind","🌵Swaying Cactus"],
+  ["🌵Cactus","🪨Stone","🪨Rocky Desert"],
+  ["🌺Flower","🌺Flower","💐Bouquet"],
+  ["🌺Flower","🔥Fire","🌸Wilted Flower"],
+  ["🌺Flower","🌧️Rain","🌸Blooming Flower"],
+  ["🌺Flower","🌍Earth","🌷Garden"],
+  ["🐝Bee","🐝Bee","🐝Swarm"],
+  ["🐝Bee","🔥Fire","💨Smoke Screen"],
+  ["🐝Bee","🌍Earth","🐝Beehive"],
+  ["🐝Bee","💧Water","🐝Wet Bee"],
+  ["🐄Cow","🐄Cow","🐄Herd"],
+  ["🐄Cow","💧Water","🐄Drinking Cow"],
+  ["🐄Cow","🔥Fire","🥩Beef"],
+  ["🐄Cow","🌬️Wind","🐄Wandering Cow"],
+  ["🐔Chicken","🐔Chicken","🐔Flock"],
+  ["🐔Chicken","💧Water","🐔Wet Chicken"],
+  ["🐔Chicken","🔥Fire","🍗Roast Chicken"],
+  ["🐔Chicken","🌍Earth","🐔Free Range"],
+  ["🐔Chicken","🥚Egg","🐔Hen"],
+  ["🪟Glass","💧Water","💧Water Glass"],
+  ["🪟Glass","🔥Fire","💥Shattered Glass"],
+  ["🪟Glass","🪟Glass","🏠Glass House"],
+  ["🪟Glass","🌍Earth","🏺Glass Jar"],
+  ["⚙️Machine","⚙️Machine","🏭Factory"],
+  ["⚙️Machine","💧Water","🚿Water Pump"],
+  ["⚙️Machine","🌍Earth","⛏️Mining Machine"],
+  ["⚙️Machine","🌬️Wind","🌀Windmill"],
+  ["⚙️Machine","🌞Sun","☀️Solar Panel"],
+  ["🔋Energy","🔋Energy","⚡Power Plant"],
+  ["🔋Energy","🌬️Wind","💨Wind Power"],
+  ["🔋Energy","🌞Sun","☀️Solar Energy"],
+  ["🔋Energy","🌊Ocean","🌊Wave Power"],
+  ["⚡Electricity","⚡Electricity","⚡Power Grid"],
+  ["⚡Electricity","💧Water","⚡Hydropower"],
+  ["⚡Electricity","🌬️Wind","⚡Wind Power"],
+  ["⚡Electricity","🌍Earth","⚡Ground Wire"],
+  ["🏖️Sand","🌬️Wind","🌪️Sandstorm"],
+  ["🏖️Sand","🏖️Sand","🏜️Desert"],
+  ["🏖️Sand","💧Water","🏖️Wet Sand"],
+  ["🏖️Sand","🌍Earth","🏖️Sandy Soil"],
+  ["🔩Metal","💧Water","🦠Rust"],
+  ["🔩Metal","🌍Earth","⛏️Iron Mine"],
+  ["🔩Metal","🔩Metal","🏗️Steel Frame"],
+  ["🔩Metal","🌬️Wind","⚙️Turbine Blade"],
+  ["🔩Metal","🪨Stone","🔨Hammer"],
+  ["🌊Wave","🌊Wave","🌊Tsunami"],
+  ["🌊Wave","🔥Fire","🌊Steamy Wave"],
+  ["🌊Wave","🌱Plant","🌿Seaweed"],
+  ["🏖️Beach","🏖️Beach","🏝️Paradise"],
+  ["🏖️Beach","💧Water","🌊Shoreline"],
+  ["🏖️Beach","🌱Plant","🌴Coastal Path"],
+  ["🏝️Island","🌱Plant","🌴Tropical Island"],
+  ["🏝️Island","🌬️Wind","🌴Windy Isle"],
+  ["🏝️Island","🔥Fire","🌋Volcanic Island"],
+  ["🏝️Island","🏝️Island","🌍Archipelago"],
+  ["🌋Volcano","🌋Volcano","🌏Ring of Fire"],
+  ["🌋Volcano","🌬️Wind","🌋Ash Cloud"],
+  ["🌋Volcano","🌱Plant","🌋Volcanic Soil"],
+  ["⛰️Mountain","⛰️Mountain","🏔️Mountain Range"],
+  ["⛰️Mountain","🌬️Wind","🌬️Alpine Wind"],
+  ["⛰️Mountain","🌱Plant","🌿Highland"],
+  ["⛰️Mountain","🌍Earth","🏔️Cliff"],
+  ["⛰️Mountain","🌞Sun","⛰️Sunlit Peak"],
+  ["🌲Forest","🌲Forest","🌲Ancient Forest"],
+  ["🌲Forest","💧Water","🌊River"],
+  ["🌲Forest","🌞Sun","🌲Sunlit Forest"],
+  ["🌲Forest","🌾Field","🌿Woodland Edge"],
+  ["🌲Forest","🌍Earth","🌍Wilderness"],
+  ["🌲Forest","🌬️Wind","🍃Wind Through Trees"],
+  ["🌿Swamp","💧Water","🌿Deep Swamp"],
+  ["🌿Swamp","🌬️Wind","🌿Misty Swamp"],
+  ["🌿Swamp","🔥Fire","💨Swamp Gas"],
+  ["🌿Swamp","🌍Earth","🌿Wetlands"],
+  ["🌫️Mist","💧Water","🌧️Drizzle"],
+  ["🌫️Mist","🔥Fire","💨Light Steam"],
+  ["🌫️Mist","🌬️Wind","🌫️Drifting Mist"],
+  ["🌫️Mist","🌫️Mist","🌫️Dense Fog"],
+  ["💨Smoke","💨Smoke","🌫️Smog"],
+  ["💨Smoke","🌍Earth","🌫️Dusty Air"],
+  ["💨Smoke","🌞Sun","🌤️Hazy Sky"],
+  ["💨Smoke","🌬️Wind","💨Dispersing Smoke"],
+  ["🌧️Rain","🌧️Rain","🌊Flood"],
+  ["🌧️Rain","⛰️Mountain","💧Mountain Stream"],
+  ["🌧️Rain","🏖️Sand","🏖️Wet Beach"],
+  ["🌧️Rain","🌬️Wind","🌧️Sideways Rain"],
+  ["🌧️Rain","🔥Fire","💨Extinguished"],
+  ["🌧️Rain","🌊Ocean","🌊Rising Sea"],
+  ["☁️Cloud","⛰️Mountain","🌫️Mountain Cloud"],
+  ["☁️Cloud","🌞Sun","⛅Partly Cloudy"],
+  ["☁️Cloud","🌧️Rain","⛈️Storm Cloud"],
+  ["☁️Cloud","☁️Cloud","🌧️Heavy Rain"],
+  ["⚡Lightning","⚡Lightning","⚡Lightning Storm"],
+  ["⚡Lightning","🌳Tree","🌳Struck Tree"],
+  ["⚡Lightning","🏖️Sand","🪟Fulgurite"],
+  ["⚡Lightning","⛰️Mountain","⛰️Thunder Peak"],
+  ["⚡Lightning","💧Water","⚡Electrocution"],
+  ["⚡Lightning","🌱Plant","🌾Scorched Plant"],
+  ["♨️Steam","♨️Steam","☁️Steam Cloud"],
+  ["♨️Steam","🌍Earth","🌋Geyser"],
+  ["♨️Steam","🌱Plant","🌿Steamed Plant"],
+  ["♨️Steam","☁️Cloud","🌧️Rain"],
+  ["🌋Lava","☁️Cloud","🌫️Volcanic Fog"],
+  ["🌋Lava","💧Water","🪨Obsidian"],
+  ["🌋Lava","🌬️Wind","🌋Lava Flow"],
+  ["🌋Lava","🌱Plant","🌋Scorched Earth"],
+  ["🌋Lava","🪨Stone","🪨Basalt"],
+  ["🪨Stone","⚡Lightning","🪨Fulgurite"],
+  ["🪨Stone","🌧️Rain","🪨Wet Stone"],
+  ["🪨Stone","🪨Stone","🏔️Boulder"],
+  ["🪨Stone","💧Water","🏖️Sand"],
+  ["🏠House","🌱Plant","🏡Garden Home"],
+  ["🏠House","🧱Brick","🏰Manor"],
+  ["🏠House","⚡Electricity","🏠Powered Home"],
+  ["🏡Home","🌱Plant","🏡Garden"],
+  ["🏡Home","⚡Electricity","💻Smart Home"],
+  ["🏡Home","🌞Sun","🏡Sunny Home"],
+  ["🍞Bread","💧Water","🍞Soggy Bread"],
+  ["🍞Bread","🧀Cheese","🥪Cheese Sandwich"],
+  ["🍞Bread","🍯Honey","🍞Honey Toast"],
+  ["🍞Toast","💧Water","🍞Wet Toast"],
+  ["🍞Toast","🧀Cheese","🥪Cheese Toast"],
+  ["🍞Toast","🍯Honey","🍞Honey Toast"],
+  ["🏺Bottle","🔥Fire","♨️Hot Drink"],
+  ["🏺Bottle","🌬️Wind","🏺Empty Bottle"],
+  ["🏺Bottle","🏺Bottle","📦Bottle Collection"],
+  ["🥤Drink","🔥Fire","☕Hot Drink"],
+  ["🥤Drink","🧊Ice","🧊Iced Drink"],
+  ["🥤Drink","🥤Drink","🍻Drinks"],
+  ["🧀Cheese","🧀Cheese","🧀Cheese Wheel"],
+  ["🧀Cheese","🔥Fire","🍕Melted Cheese"],
+  ["🧀Cheese","🍞Bread","🥪Cheese Sandwich"],
+  ["🧀Cheese","🌬️Wind","🧀Aged Cheese"],
+  ["🐚Shell","🐚Shell","🐚Shell Collection"],
+  ["🐚Shell","💧Water","🐚Washed Shell"],
+  ["🦪Pearl","🦪Pearl","💎Pearl Necklace"],
+  ["🦪Pearl","🔥Fire","💎Polished Pearl"],
+  ["🎺Horn","🌬️Wind","🎵Horn Call"],
+  ["🎺Horn","🎺Horn","🎶Horn Duet"],
+  ["🐟Fish","🐟Fish","🐠School of Fish"],
+  ["🐟Fish","🔥Fire","🍣Cooked Fish"],
+  ["🐟Fish","🌍Earth","🐟River Fish"],
+  ["🐟Fish","🌬️Wind","🎣Fishing Trip"],
+  ["🐟Fish","⛵Boat","🎣Fishing Boat"],
+  ["🌿Bush","🌿Bush","🌲Hedge"],
+  ["🌿Bush","💧Water","🌿Wet Bush"],
+  ["🌿Bush","🔥Fire","🌾Burnt Bush"],
+  ["🌿Bush","🌬️Wind","🍃Rustling Bush"],
+  ["🌿Bush","🌺Flower","🌸Flower Bush"],
+  ["🍄Mushroom","🍄Mushroom","🍄Mushroom Patch"],
+  ["🍄Mushroom","💧Water","🍄Wet Mushroom"],
+  ["🍄Mushroom","🔥Fire","🍄Cooked Mushroom"],
+  ["🍄Mushroom","🌍Earth","🍄Forest Mushroom"],
+  ["🍄Mushroom","🌱Plant","🌿Fungal Garden"],
+  ["🌪️Dust Storm","🌬️Wind","🌪️Mega Dust Storm"],
+  ["🌪️Dust Storm","🌍Earth","🏜️Dust Bowl"],
+  ["🌪️Dust Storm","☁️Cloud","🌧️Dust Rain"],
+  ["🌪️Dust Storm","🔥Fire","💥Firestorm"],
+  ["🪟Fulgurite","🌍Earth","💎Rare Mineral"],
+  ["🪟Fulgurite","💧Water","🔬Specimen"],
+  ["🚿Pump","💧Water","🌊Water Supply"],
+  ["🚿Pump","🌍Earth","🏗️Well"],
+  ["🌀Windmill","🌬️Wind","⚡Wind Energy"],
+  ["🌀Windmill","🌾Field","🌾Mill"],
+  ["☀️Solar Panel","☀️Sun","⚡Solar Power"],
+  ["☀️Solar Panel","☀️Solar Panel","⚡Solar Farm"],
+  ["👤Human","👤Human","👥Crowd"],
+  ["👤Human","🔥Fire","🏕️Caveman"],
+  ["👤Human","🌬️Wind","🏃Running Human"],
+  ["👤Human","🌱Plant","🌾Farmer"],
+  ["👨‍👩‍👧Family","🏠House","🏡Family Home"],
+  ["👨‍👩‍👧Family","🌱Plant","🌻Happy Family"],
+  ["👨‍💻Programmer","💻Computer","💻Code"],
+  ["👨‍💻Programmer","☕Coffee","👨‍💻Caffeinated Dev"],
+  ["👨‍💻Programmer","🌐Internet","🌐Web Dev"],
+  ["🤖Robot","🤖Robot","🤖Robot Army"],
+  ["🤖Robot","💧Water","🤖Wet Robot"],
+  ["🤖Robot","🔥Fire","🔥Robot Fire"],
+  ["🤖Robot","🌍Earth","⛏️Mining Robot"],
+  ["🤖Robot","🌐Internet","🤖AI"],
+  ["🏛️Ruins","💧Water","🏛️Flooded Ruins"],
+  ["🏛️Ruins","🌱Plant","🌿Overgrown Ruins"],
+  ["🏛️Ruins","🌍Earth","🏛️Ancient Site"],
+  ["🌳Growth","💧Water","🌲Thriving Tree"],
+  ["🌲Jungle","💧Water","🌊River Jungle"],
+  ["🌲Jungle","🔥Fire","🔥Jungle Fire"],
+  ["🌲Jungle","🌍Earth","🌍Jungle Floor"],
+  ["🐠Aquarium","💧Water","🐟Full Aquarium"],
+  ["🐠Aquarium","🔥Fire","🌡️Warm Tank"],
+  ["🐠Aquarium","🌱Plant","🌿Planted Tank"],
+  ["🌎Planet","💧Water","🌊Ocean World"],
+  ["🌎Planet","🔥Fire","🌋Lava Planet"],
+  ["🌎Planet","🌬️Wind","🌪️Stormy Planet"],
+  ["🌌Solar System","🌌Solar System","🌌Galaxy"],
+  ["🌌Solar System","🔥Fire","⭐Star"],
+  ["🌌Solar System","💧Water","🌊Ice Planet"],
+  ["🌀Turbine","🌀Turbine","⚡Power Plant"],
+  ["🔌Power Grid","🔌Power Grid","🌆City Power"],
+  ["🔌Power Grid","💧Water","⚡Hydroplant"],
+  ["🏭Factory","🏭Factory","🌆Industrial City"],
+  ["🏭Factory","💧Water","🏭Steam Factory"],
+  ["🏭Factory","🌬️Wind","💨Factory Smoke"],
+  ["🏭Factory","🌍Earth","⛏️Mine"],
+  ["🏭Factory","🔥Fire","🔥Factory Fire"],
+  ["🏰Castle","🏰Castle","👑Kingdom"],
+  ["🏰Castle","💧Water","🏰Moat"],
+  ["🏰Castle","🌬️Wind","🏰Windy Castle"],
+  ["🏰Castle","🌱Plant","🌿Castle Garden"],
+  ["👑Kingdom","💧Water","🌊Island Kingdom"],
+  ["👑Kingdom","🔥Fire","🔥Kingdom Fire"],
+  ["👑Kingdom","🌍Earth","🌍Empire"],
+  ["🏗️Wall","🏗️Wall","🏰Castle"],
+  ["🏗️Wall","💧Water","🏗️Wet Wall"],
+  ["🏗️Wall","🔥Fire","🏗️Crumbling Wall"],
+  ["🏗️Wall","🌱Plant","🌿Ivy Wall"],
+  ["🌍Atmosphere","💧Water","☁️Weather"],
+  ["🌍Atmosphere","🌬️Wind","🌬️Jet Stream"],
+  ["🌍Atmosphere","🌱Plant","🌿Oxygen"],
+  ["☀️Sun","☀️Sun","🌟Solar Flare"],
+  ["☀️Sun","💧Water","🌈Rainbow"],
+  ["☀️Sun","🌬️Wind","🌤️Warm Breeze"],
+  ["☀️Sun","🌱Plant","🌻Sunflower"],
+  ["☀️Sun","🏖️Sand","🏜️Hot Desert"],
+  ["☀️Sun","⛰️Mountain","⛰️Sunlit Peak"],
+  ["☀️Sun","☁️Cloud","⛅Partly Cloudy"],
+  ["☀️Sun","🌍Earth","🌍Warm Earth"],
+  ["🌊River","💧Water","🌊Deep River"],
+  ["🌊River","🌍Earth","🌊River Delta"],
+  ["🌊River","🔥Fire","♨️Hot Spring"],
+  ["🌊Flood","🌍Earth","🌿Floodplain"],
+  ["🌊Flood","🏠House","🏠Flooded House"],
+  ["❄️Snow","❄️Snow","🧊Ice Sheet"],
+  ["❄️Snow","🌍Earth","🏔️Snowfield"],
+  ["❄️Snow","🌱Plant","❄️Frozen Plant"],
+  ["❄️Blizzard","❄️Blizzard","🌨️Whiteout"],
+  ["❄️Blizzard","🏠House","🏠Snow Covered House"],
+  ["❄️Blizzard","🌍Earth","❄️Tundra"],
+  ["🧊Ice","🧊Ice","❄️Ice Sheet"],
+  ["🧊Ice","🌍Earth","🏔️Glacier"],
+  ["🧊Ice","🌱Plant","❄️Frozen Plant"],
+
+  
+  ["🎬Classic Clip","📹Video","🎞️Throwback Clip"],
+  ["🎞️Throwback Clip","📺YouTube","📼Old Upload"],
+  ["📼Old Upload","📺YouTube","🗃️Archive Video"],
+  ["🗃️Archive Video","📺YouTube","📼Legacy Channel"],
+  ["📼Legacy Channel","📺YouTube","📺jackmw"],
+  ["📼Old Channel","📺YouTube","📺SamSmellsOfApricot"],
+  ["📺SamSmellsOfApricots","🍑Apricot","😂Channel Joke"],
+  ["😂Channel Joke","📺YouTube","🎬Weird Channel Name"],
+["🌍Earth","💧Water","🌱Life"],
+["🌱Life","🌍Earth","👤Human"],
+["👤Human","📺YouTube","🧑‍🦱Jack"],
+["👤Human","📹Video","🧑‍🦱Jack"],
+["👤Human","🌐Internet","🧑‍🦱Jack"],
+["👤Human","🎥Channel","🧑‍🦱Jack"],
+["👤Human","🎬Content","🧑‍🦱Jack"],
+["👨‍💻Programmer","📺YouTube","🧑‍🦱Jack"],
+["👨‍💻Programmer","📹Video","🧑‍🦱Jack"],
+["🎥Channel","📺YouTube","🧑‍🦱Jack"],
+["📹Video","📺YouTube","🧑‍🦱Jack"],
+["👤Human","🔥Viral Video","🧑‍🦱Jack"],
+["👤Human","🔥Trending","🧑‍🦱Jack"],
+["📺YouTube","⭐YouTuber","🧑‍🦱Jack"],
+["📺YouTube","🎬Content","🧑‍🦱Jack"],
+["👤Human","🌍Earth","🧑‍🦱Jack"],
+["👤Human","🌳Tree","🧑‍🦱Jack"],
+["👤Human","🐶Dog","🧑‍🦱Jack"],
+["👤Human","🎮Game","🧑‍🦱Jack"],
+["👤Human","🌐Web Dev","🧑‍🦱Jack"],
+["🎬Series","📺YouTube","🧑‍🦱Jack"],
+["📹Video","🌐Internet","🧑‍🦱Jack"],
+["👤Human","📦Collection","🧑‍🦱Jack"],
+["👤Human","🏆Play Button","🧑‍🦱Jack"],
+["🧑‍🦱Jack","📺YouTube","🧑‍🦱JackSucksAtLife"],
+["🧑‍🦱Jack","🎥Channel","🧑‍🦱JackSucksAtLife"],
+["🧑‍🦱Jack","📹Video","🧑‍🦱JackSucksAtLife"],
+["🧑‍🦱Jack","🌐Internet","🧑‍🦱JackSucksAtLife"],
+["🧑‍🦱Jack","▶️Subscriber","🧑‍🦱JackSucksAtLife"],
+["🧑‍🦱Jack","🔥Viral Video","🧑‍🦱JackSucksAtLife"],
+["🧑‍🦱Jack","📈Algorithm","🧑‍🦱JackSucksAtLife"],
+["🧑‍🦱Jack","🏆Play Button","🧑‍🦱JackSucksAtLife"],
+["🧑‍🦱Jack","🌍Earth","🧑‍🦱JackSucksAtLife"],
+["📺YouTube","💰Money","🧑MrBeast"],
+["📺YouTube","🎁Giveaway","🧑MrBeast"],
+["📺YouTube","🔥Viral Video","🧑MrBeast"],
+["📺YouTube","📈Algorithm","🧑MrBeast"],
+["💰Money","📹Video","🧑MrBeast"],
+["🎁Giveaway","📹Video","🧑MrBeast"],
+["🎬Content","💰Money","🧑MrBeast"],
+["⭐YouTuber","💰Money","🧑MrBeast"],
+["⭐YouTuber","🎁Giveaway","🧑MrBeast"],
+["📺Channel","💰Money","🧑MrBeast"],
+["📺YouTube","🎮Game","🧑PewDiePie"],
+["📺YouTube","😂Meme","🧑PewDiePie"],
+["📺YouTube","🎬Content","🧑PewDiePie"],
+["🎮Game","📹Video","🧑PewDiePie"],
+["🎮Game","🔥Viral Video","🧑PewDiePie"],
+["😂Meme","📹Video","🧑PewDiePie"],
+["🎮Game","⭐YouTuber","🧑PewDiePie"],
+["📺Channel","🎮Game","🧑PewDiePie"],
+["🔥Trending","🎮Game","🧑PewDiePie"],
+["📺YouTube","🔥Trending","🧑PewDiePie"],
+["🧑‍🦱JackSucksAtLife","😂Running Joke","🧠JSAL Lore"],
+["🧠JSAL Lore","📹Video","🎞️Inside Joke"],
+["🎞️Inside Joke","📺YouTube","😂JSAL Meme"],
+["😂JSAL Meme","📹Video","😂Legendary Clip"],
+["😂Legendary Clip","🔥Fire","🔥Iconic Moment"],
+["🔥Iconic Moment","📺YouTube","🎬JSAL Classic"],
+["🧑‍🦱JackSucksAtLife","🌱Plant","🌳Wee Wee Bush"],
+["🌳Wee Wee Bush","📹Video","😂Wee Wee Clip"],
+["🌳Wee Wee Bush","💧Water","🌳Watered Bush"],
+["🌳Wee Wee Bush","🌳Wee Wee Bush","🌳Wee Wee Forest"],
+["🌳Wee Wee Forest","📹Video","😂Wee Wee Saga"],
+["🌳Wee Wee Forest","🌲Forest","🌲Bush Kingdom"],
+["🧑‍🦱JackSucksAtLife","🎨Pink","🎭Pink Wig Promise"],
+["🎭Pink Wig Promise","📺YouTube","🎬Legendary Bet"],
+["🎭Pink Wig Promise","👥r/jacksucksatlife","😂Pink Wig Meme"],
+["🎭Pink Wig Promise","🎭Pink Wig Promise","🎭Double Pink Wig"],
+["🎭Double Pink Wig","📹Video","😂Ultimate Wig Moment"],
+["📢Viral Moment","📺YouTube","💩Turdboi420"],
+["💩Turdboi420","📺YouTube","💩Turdboi Channel"],
+["💩Turdboi420","🔥Fire","💩Legendary Meme"],
+["💩Legendary Meme","💩Turdboi420","💩Ultimate Meme"],
+["💩Ultimate Meme","💩Turdboi420","💩Meme King"],
+["💩Meme King","📺YouTube","😂Legendary Meme Channel"],
+["🧑‍🦱JackSucksAtLife","🐶Dog","🐶Kong"],
+["🐶Kong","🐶Dog","🐕Flossy"],
+["🐶Kong","📹Video","📹Kong Video"],
+["🐕Flossy","📹Video","📹Flossy Video"],
+["🐶Kong","🦴Bone","🐕Happy Kong"],
+["🐕Flossy","🏡Home","🐾Dog Chaos"],
+["📺YouTube","👥Community","👥r/jacksucksatlife"],
+["👥r/jacksucksatlife","👥r/jacksucksatlife","📌Mega Thread"],
+["👥r/jacksucksatlife","📹Video","💬Reddit Post"],
+["💬Reddit Post","🔥Fire","🔥Reddit Drama"],
+["🔥Reddit Drama","💬Reddit Post","🔥Reddit War"],
+["🔥Reddit War","📺YouTube","😂Reddit Reaction"],
+["🧑‍🦱JackSucksAtLife","👩Becky","💑Jack & Becky"],
+["💑Jack & Becky","🏡Home","🏠Couple Vlog"],
+["🧑‍🦱JackSucksAtLife","🧑‍💻Kai","✂️Kai the Editor"],
+["✂️Kai the Editor","📹Video","🎬Perfect Cut"],
+["🎬Perfect Cut","🔥Fire","🔥Funny Moment"],
+["🧑‍🦱JackSucksAtLife","👬Friend","👬Jack & Oscar"],
+["🧑‍🦱JackSucksAtLife","📦Collection","📦Play Button Collection"],
+["📦Play Button Collection","🥈Silver Play Button","📦More Play Buttons"],
+["📦More Play Buttons","🥇Gold Play Button","📦Huge Play Button Collection"],
+["📦Huge Play Button Collection","💎Diamond Play Button","📦Ultimate Play Button Shelf"],
+["📦Ultimate Play Button Shelf","📹Video","🎥Play Button Tour"],
+["📦Play Button Collection","👑YouTube Legend","💎Creator Museum"],
+["🧑‍🦱JackSucksAtLife","🎮Game","🎮Skycade"],
+["🎮Skycade","🎮Skycade","🎮Skycade 2.0"],
+["🎮Skycade","📹Video","🎮Skycade Video"],
+["🎮Skycade","👥Community","🎮Skycade Players"],
+["🎮Skycade","⛏️Minecraft","🧱Skycade Base"],
+["🧱Skycade Base","🏗️Minecraft Build","🏰Skycade Castle"],
+["🏰Skycade Castle","📹Video","🎥Castle Build Video"],
+["🧑‍🦱JackSucksAtLife","🚽Toilet","🎴Toilet Mutant Jack"],
+["🧑‍🦱JackSucksAtLife","🎨Pink","🎴Pink Hair Jack"],
+["🧑‍🦱JackSucksAtLife","🚲Unicycle","🎴Jack On A Unicycle"],
+["🧑‍🦱JackSucksAtLife","🤖Robot","🤖AI Jack"],
+["🤖AI Jack","📺YouTube","🤖AI Channel"],
+["🧑‍🦱JackSucksAtLife","🍕Pizza","🍕Jack Orders Pizza"],
+["🧑‍🦱JackSucksAtLife","☕Coffee","☕Caffeinated Jack"],
+];
+
+const COMBO_MAP = (() => {
+  const m = {};
+  for (const [a, b, r] of RAW) {
+    const na = getName(a).toLowerCase();
+    const nb = getName(b).toLowerCase();
+    const val = { emoji: getEmoji(r), name: getName(r) };
+    m[na+'+'+nb] = val;
+    m[nb+'+'+na] = val;
+  }
+  return m;
+})();
+
+function lookupCombo(na, nb) {
+  return COMBO_MAP[na.toLowerCase()+'+'+nb.toLowerCase()] || null;
+}
+
+const PRIMITIVE = new Set([
+  'water','fire','wind','earth','steam','lava','stone','plant','tree','forest',
+  'ocean','rain','cloud','mud','brick','sand','glass','metal','energy','seed',
+  'grass','milk','honey','cake','cactus','flower','bee','volcano','mountain',
+  'wave','beach','island','vegetation','bush','ash','mist','fog','smoke',
+  'ice','snow','blizzard','river','flood','sun','lightning','dust','rust',
+  'wheat','soil','jungle','meadow','swamp','reef','cave','valley','cliff',
+  'wood','coal','iron','gold','silver','crystal','gem','clay','salt','oil',
+  'egg','meat','fish','bread','toast','cheese','fruit','grain','wool',
+  'human','family','crowd','robot','machine','electricity','computer',
+]);
+
+function isPrimitive(name) {
+  return PRIMITIVE.has(name.toLowerCase().trim());
+}
+
+function smartFallback(na, nb) {
+  
+  if (!isPrimitive(na) || !isPrimitive(nb)) return null;
+
+  const a = na.replace(/\s+/g,''), b = nb.replace(/\s+/g,'');
+  const candidate = a.slice(0, Math.ceil(a.length/2)) + b.slice(Math.floor(b.length/2));
+
+  if (candidate.length < 4) return null;
+  if (!/[aeiouAEIOU]/.test(candidate)) return null;
+  const vowels = (candidate.match(/[aeiouAEIOU]/g)||[]).length;
+  const ratio  = vowels / candidate.length;
+  if (ratio < 0.2 || ratio > 0.8) return null;
+
+  const pool = ['✨','🔮','💫','🌀','⚡','🎭','💥','🌟','🔥','💎','🪄','🌈'];
+  return {
+    emoji: pool[(a.charCodeAt(0)+b.charCodeAt(0)) % pool.length],
+    name:  candidate.charAt(0).toUpperCase() + candidate.slice(1)
+  };
+}
+
+const STARTERS = [
+  { emoji:'💧', name:'Water' },
+  { emoji:'🔥', name:'Fire'  },
+  { emoji:'🌬️', name:'Wind'  },
+  { emoji:'🌍', name:'Earth' },
+];
+
+let discovered = STARTERS.map((s,i)=>({...s,id:i,time:i}));
+let nextId     = STARTERS.length;
+let canvasEls  = [];
+let dragging   = null, dragOffX=0, dragOffY=0;
+let draggingFromSidebar=null, sidebarGhost=null;
+let sortMode   = 'disc';
+let searchQ    = '';
+let soundOn    = true;
+let username   = null;
+let toastTimer = null;
+
+const canvas    = document.getElementById('canvas');
+const itemsList = document.getElementById('itemsList');
+const toast     = document.getElementById('resultToast');
+
+let _actx;
+function actx(){ return _actx||(_actx=new(window.AudioContext||window.webkitAudioContext)()); }
+function playSound(t){
+  if(!soundOn) return;
+  try{
+    const c=actx();
+    if(t==='pickup'){
+      const o=c.createOscillator(),g=c.createGain();
+      o.connect(g);g.connect(c.destination);
+      o.frequency.setValueAtTime(520,c.currentTime);
+      o.frequency.exponentialRampToValueAtTime(620,c.currentTime+0.08);
+      g.gain.setValueAtTime(0.12,c.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.1);
+      o.start();o.stop(c.currentTime+0.1);
+    }else if(t==='combine'){
+      const o=c.createOscillator(),g=c.createGain();
+      o.connect(g);g.connect(c.destination);
+      o.frequency.setValueAtTime(440,c.currentTime);
+      o.frequency.exponentialRampToValueAtTime(880,c.currentTime+0.15);
+      g.gain.setValueAtTime(0.15,c.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.2);
+      o.start();o.stop(c.currentTime+0.2);
+    }else if(t==='discovery'){
+      [523,659,784,1047].forEach((f,i)=>{
+        const o=c.createOscillator(),g=c.createGain();
+        o.connect(g);g.connect(c.destination);
+        o.frequency.value=f;
+        g.gain.setValueAtTime(0.12,c.currentTime+i*0.1);
+        g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+i*0.1+0.18);
+        o.start(c.currentTime+i*0.1);o.stop(c.currentTime+i*0.1+0.18);
+      });
+    }else if(t==='global'){
+      [392,523,659,784,1047].forEach((f,i)=>{
+        const o=c.createOscillator(),g=c.createGain();
+        o.connect(g);g.connect(c.destination);
+        o.frequency.value=f;
+        g.gain.setValueAtTime(0.14,c.currentTime+i*0.08);
+        g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+i*0.08+0.18);
+        o.start(c.currentTime+i*0.08);o.stop(c.currentTime+i*0.08+0.18);
+      });
+    }
+  }catch(e){}
+}
+
+const savedUser=localStorage.getItem('jcraft_username');
+if(savedUser){ username=savedUser; document.getElementById('modalOverlay').style.display='none'; }
+document.getElementById('modalConfirm').onclick=()=>{
+  username=document.getElementById('usernameInput').value.trim()||'Anonymous';
+  localStorage.setItem('jcraft_username',username);
+  document.getElementById('modalOverlay').style.display='none';
+};
+document.getElementById('modalSkip').onclick=()=>{
+  username='Anonymous';
+  document.getElementById('modalOverlay').style.display='none';
+};
+document.getElementById('usernameInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter') document.getElementById('modalConfirm').click();
+});
+
+function renderSidebar(){
+  let items=[...discovered];
+  if(sortMode==='time') items.sort((a,b)=>b.time-a.time);
+  if(searchQ) items=items.filter(e=>e.name.toLowerCase().includes(searchQ));
+  itemsList.innerHTML='';
+  items.forEach(e=>{
+    const el=document.createElement('div');
+    el.className='sidebar-item';
+    el.innerHTML=`<span>${e.emoji}</span><span>${e.name}</span>`;
+    el.addEventListener('mousedown',ev=>onSidebarMouseDown(ev,e));
+    el.addEventListener('touchstart',ev=>onSidebarTouchStart(ev,e),{passive:false});
+    itemsList.appendChild(el);
+  });
+  document.getElementById('itemCount').textContent=
+    `${discovered.length} element${discovered.length!==1?'s':''}`;
+}
+document.getElementById('searchInput').oninput=e=>{searchQ=e.target.value.toLowerCase();renderSidebar();};
+document.getElementById('tabDisc').onclick=()=>{
+  sortMode='disc';
+  document.getElementById('tabDisc').classList.add('active');
+  document.getElementById('tabTime').classList.remove('active');
+  renderSidebar();
+};
+document.getElementById('tabTime').onclick=()=>{
+  sortMode='time';
+  document.getElementById('tabTime').classList.add('active');
+  document.getElementById('tabDisc').classList.remove('active');
+  renderSidebar();
+};
+document.getElementById('tabTrash').onclick=()=>{
+  if(confirm('Reset all discoveries?')){
+    discovered=STARTERS.map((s,i)=>({...s,id:i,time:i}));
+    nextId=STARTERS.length;
+    renderSidebar();
+  }
+};
+document.getElementById('soundBtn').onclick=()=>{
+  soundOn=!soundOn;
+  document.getElementById('soundBtn').textContent=soundOn?'🔊':'🔇';
+};
+document.getElementById('clearBtn').onclick=()=>{canvasEls.forEach(e=>e.remove());canvasEls=[];};
+
+function createGhost(data,cx,cy){
+  const g=document.createElement('div');
+  g.className='ghost';
+  g.innerHTML=`<span class="ghost-emoji">${data.emoji}</span><span class="ghost-text">${data.name}</span>`;
+  g.style.left=(cx-30)+'px';g.style.top=(cy-39)+'px';
+  document.body.appendChild(g);return g;
+}
+function moveGhost(cx,cy){
+  if(sidebarGhost){sidebarGhost.style.left=(cx-30)+'px';sidebarGhost.style.top=(cy-39)+'px';}
+}
+
+function onSidebarMouseDown(e,data){
+  e.preventDefault();draggingFromSidebar=data;
+  e.currentTarget.classList.add('dragging-from-sidebar');
+  sidebarGhost=createGhost(data,e.clientX,e.clientY);playSound('pickup');
+  window.addEventListener('mousemove',onSidebarMouseMove);
+  window.addEventListener('mouseup',onSidebarMouseUp);
+}
+function onSidebarMouseMove(e){moveGhost(e.clientX,e.clientY);}
+function onSidebarMouseUp(e){
+  window.removeEventListener('mousemove',onSidebarMouseMove);
+  window.removeEventListener('mouseup',onSidebarMouseUp);
+  if(sidebarGhost){sidebarGhost.remove();sidebarGhost=null;}
+  document.querySelectorAll('.dragging-from-sidebar').forEach(el=>el.classList.remove('dragging-from-sidebar'));
+  const r=canvas.getBoundingClientRect();
+  if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom)
+    spawnInstance(draggingFromSidebar,e.clientX-r.left-30,e.clientY-r.top-39);
+  draggingFromSidebar=null;
+}
+function onSidebarTouchStart(e,data){
+  e.preventDefault();draggingFromSidebar=data;
+  e.currentTarget.classList.add('dragging-from-sidebar');
+  const t=e.touches[0];sidebarGhost=createGhost(data,t.clientX,t.clientY);playSound('pickup');
+  window.addEventListener('touchmove',onSidebarTouchMove,{passive:false});
+  window.addEventListener('touchend',onSidebarTouchEnd);
+}
+function onSidebarTouchMove(e){e.preventDefault();moveGhost(e.touches[0].clientX,e.touches[0].clientY);}
+function onSidebarTouchEnd(e){
+  window.removeEventListener('touchmove',onSidebarTouchMove);
+  window.removeEventListener('touchend',onSidebarTouchEnd);
+  if(sidebarGhost){sidebarGhost.remove();sidebarGhost=null;}
+  document.querySelectorAll('.dragging-from-sidebar').forEach(el=>el.classList.remove('dragging-from-sidebar'));
+  const t=e.changedTouches[0];const r=canvas.getBoundingClientRect();
+  if(t.clientX>=r.left&&t.clientX<=r.right&&t.clientY>=r.top&&t.clientY<=r.bottom)
+    spawnInstance(draggingFromSidebar,t.clientX-r.left-30,t.clientY-r.top-39);
+  draggingFromSidebar=null;
+}
+
+function spawnInstance(data,x,y){
+  if(x===undefined){
+    x=60+Math.random()*(canvas.clientWidth-260);
+    y=60+Math.random()*(canvas.clientHeight-140);
+  }
+  const el=document.createElement('div');
+  el.className='instance';
+  el.style.left=x+'px';el.style.top=y+'px';
+  el.innerHTML=`<span class="instance-emoji">${data.emoji}</span><span class="instance-text">${data.name}</span>`;
+  el._data=data;
+  el.addEventListener('mousedown',onMouseDown);
+  el.addEventListener('touchstart',onTouchStart,{passive:false});
+  canvas.appendChild(el);canvasEls.push(el);
+  return el;
+}
+
+function onMouseDown(e){e.preventDefault();playSound('pickup');startDrag(e.currentTarget,e.clientX,e.clientY);window.addEventListener('mousemove',onMouseMove);window.addEventListener('mouseup',onMouseUp);}
+function onMouseMove(e){if(dragging)moveDrag(e.clientX,e.clientY);}
+function onMouseUp(){endDrag();window.removeEventListener('mousemove',onMouseMove);window.removeEventListener('mouseup',onMouseUp);}
+function onTouchStart(e){e.preventDefault();playSound('pickup');startDrag(e.currentTarget,e.touches[0].clientX,e.touches[0].clientY);window.addEventListener('touchmove',onTouchMove,{passive:false});window.addEventListener('touchend',onTouchEnd);}
+function onTouchMove(e){e.preventDefault();if(dragging)moveDrag(e.touches[0].clientX,e.touches[0].clientY);}
+function onTouchEnd(){endDrag();window.removeEventListener('touchmove',onTouchMove);window.removeEventListener('touchend',onTouchEnd);}
+
+function startDrag(el,cx,cy){
+  dragging=el;const r=el.getBoundingClientRect();
+  dragOffX=cx-r.left;dragOffY=cy-r.top;
+  el.style.zIndex=50;el.style.transition='none';el.classList.add('selected');
+}
+function moveDrag(cx,cy){
+  const r=canvas.getBoundingClientRect();
+  dragging.style.left=(cx-r.left-dragOffX)+'px';
+  dragging.style.top=(cy-r.top-dragOffY)+'px';
+}
+function endDrag(){
+  if(!dragging)return;
+  const el=dragging;
+  el.style.zIndex=11;el.style.transition='';el.classList.remove('selected');
+  dragging=null;
+  const dr=el.getBoundingClientRect();
+  for(const other of canvasEls){
+    if(other===el)continue;
+    const or=other.getBoundingClientRect();
+    if(!(dr.right<or.left||dr.left>or.right||dr.bottom<or.top||dr.top>or.bottom)){
+      combine(el,other);return;
+    }
+  }
+}
+
+async function combine(a,b){
+  const d1=a._data, d2=b._data;
+
+  const defined = lookupCombo(d1.name, d2.name);
+  const result  = defined || smartFallback(d1.name, d2.name);
+
+  
+  if(!result){
+    
+    a.classList.remove('combining');
+    b.classList.remove('combining');
+    a.style.left = (parseFloat(a.style.left) - 30) + 'px';
+    b.style.left = (parseFloat(b.style.left) + 30) + 'px';
+    return;
+  }
+
+  playSound('combine');
+  a.classList.add('combining');b.classList.add('combining');
+
+  const isNew = !discovered.find(e=>e.name===result.name);
+  if(isNew){
+    discovered.push({...result,id:nextId++,time:Date.now()});
+    renderSidebar();
+    playSound('discovery');
+  }
+
+  
+  let isGlobalFirst=false, globalDiscoverer=null;
+  if(isNew && window._claimDiscovery){
+    try{
+      const res=await window._claimDiscovery(result.name, username||'Anonymous');
+      isGlobalFirst=res.isFirst;
+      globalDiscoverer=res.discoverer;
+      if(isGlobalFirst) playSound('global');
+    }catch(e){}
+  }
+
+  document.getElementById('rEmoji').textContent=result.emoji;
+  document.getElementById('rName').textContent=result.name;
+  document.getElementById('rCombo').textContent=`${d1.emoji} ${d1.name} + ${d2.emoji} ${d2.name}`;
+  const rFirst=document.getElementById('rFirst');
+  if(isGlobalFirst){
+    rFirst.style.display='block';rFirst.className='first-disc global';
+    rFirst.innerHTML=`<span>🌍 WORLD FIRST — ${username||'Anonymous'}!</span>`;
+  }else if(isNew&&globalDiscoverer){
+    rFirst.style.display='block';rFirst.className='first-disc';
+    rFirst.innerHTML=`<span>⭐ First discovered by ${globalDiscoverer}</span>`;
+  }else if(isNew){
+    rFirst.style.display='block';rFirst.className='first-disc';
+    rFirst.innerHTML=`<span>⭐ First Discovery!</span>`;
+  }else{
+    rFirst.style.display='none';
+  }
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>toast.classList.remove('show'),2200);
+
+  const mx=(parseFloat(a.style.left)+parseFloat(b.style.left))/2;
+  const my=(parseFloat(a.style.top)+parseFloat(b.style.top))/2;
+  a.remove();b.remove();
+  canvasEls=canvasEls.filter(e=>e!==a&&e!==b);
+  spawnInstance(result,mx,my);
+}
+
+renderSidebar();
+setTimeout(()=>{
+  const cx=canvas.clientWidth/2, cy=canvas.clientHeight/2;
+  spawnInstance(STARTERS[0], cx-320, cy-39);
+  spawnInstance(STARTERS[1], cx-100, cy-39);
+  spawnInstance(STARTERS[2], cx+120, cy-39);
+  spawnInstance(STARTERS[3], cx-210, cy+80);
+},50);
+</script>
+</body>
+</html>
