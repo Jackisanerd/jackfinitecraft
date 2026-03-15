@@ -5,47 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jackfinite Craft</title>
 
-<!-- Firebase: global first-discovery tracking -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyBPUBREL_KdrA29ezC9jBFMGeiRtTlpxio",
-    authDomain: "letsjattlethis.firebaseapp.com",
-    databaseURL: "https://letsjattlethis-default-rtdb.firebaseio.com",
-    projectId: "letsjattlethis",
-    storageBucket: "letsjattlethis.firebasestorage.app",
-    messagingSenderId: "847830788370",
-    appId: "1:847830788370:web:4ad68f74e224d960076bcb"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db  = getDatabase(app);
-
-  function toKey(name) {
-    return name.toLowerCase().replace(/[^a-z0-9]/g,'_').slice(0,100);
-  }
-
-  window._claimDiscovery = async (itemName, username) => {
-    const key  = toKey(itemName);
-    const path = ref(db, 'craft_discoveries/' + key);
-    try {
-      const snap = await get(path);
-      if (snap.exists()) {
-        return { isFirst: false, discoverer: snap.val().username };
-      }
-      await set(path, {
-        username: (username||'Anonymous').replace(/[<>"'&]/g,'').slice(0,30),
-        ts: Date.now()
-      });
-      return { isFirst: true, discoverer: username || 'Anonymous' };
-    } catch(e) {
-      return { isFirst: false, discoverer: null };
-    }
-  };
-</script>
-
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -174,7 +133,6 @@
   .result-toast-combo { font-size: 0.75rem; color: #888; margin-top: 2px; }
   .first-disc      { font-size: 0.7rem; color: #888; margin-top: 3px; }
   .first-disc span { background: #fffbe6; border: 1px solid #ffe066; border-radius: 4px; padding: 1px 6px; }
-  .first-disc.global span { background: #fff0f0; border-color: #f5a0a0; color: #900; }
 
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.35);
@@ -253,7 +211,7 @@
   <div class="modal">
     <div style="font-size:2rem;margin-bottom:8px">🧪</div>
     <h2>Set a username</h2>
-    <p>Claim <strong>global first discoveries</strong> — be the first in the world to find a combination!</p>
+    <p>Your username is saved locally so you can track your own discoveries!</p>
     <input type="text" id="usernameInput" placeholder="Your username…" maxlength="30" />
     <button class="modal-btn" id="modalConfirm">Start Crafting →</button>
     <div class="modal-skip" id="modalSkip">Skip (play anonymously)</div>
@@ -262,8 +220,28 @@
 
 <script>
 
+// ─── Storage helpers ───────────────────────────────────────────────────────────
+const STORAGE_KEY_DISC = 'jcraft_discovered';
+const STORAGE_KEY_USER = 'jcraft_username';
+
+function saveDiscovered() {
+  try {
+    localStorage.setItem(STORAGE_KEY_DISC, JSON.stringify(
+      discovered.map(({ emoji, name, id, time }) => ({ emoji, name, id, time }))
+    ));
+  } catch(e) {}
+}
+
+function loadDiscovered() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_DISC);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return null;
+}
+
+// ─── Item name / emoji helpers ─────────────────────────────────────────────────
 function getName(s) {
-  
   return s.replace(/^[^A-Za-z0-9]+/, '').trim();
 }
 function getEmoji(s) {
@@ -271,8 +249,8 @@ function getEmoji(s) {
   return s.slice(0, s.length - name.length).trim() || '✨';
 }
 
+// ─── Combo table ───────────────────────────────────────────────────────────────
 const RAW = [
-  
   ["💧Water","💧Water","🌊Ocean"],
   ["🔥Fire","🔥Fire","🌋Volcano"],
   ["🌬️Wind","🌬️Wind","🌪️Tornado"],
@@ -283,8 +261,6 @@ const RAW = [
   ["🔥Fire","🌬️Wind","🔥Wildfire"],
   ["🔥Fire","🌍Earth","🌋Lava"],
   ["🌬️Wind","🌍Earth","🌪️Dust Storm"],
-
-  
   ["🌊Ocean","🌊Ocean","🌊Deep Ocean"],
   ["🌊Ocean","🌬️Wind","🌊Waves"],
   ["🌊Ocean","🌍Earth","🏝️Island"],
@@ -387,8 +363,6 @@ const RAW = [
   ["🔥Campfire","💧Water","💨Extinguished Fire"],
   ["🔥Campfire","🌍Earth","🪨Fire Pit"],
   ["🔥Campfire","🌱Plant","💨Smoke"],
-
-  
   ["🪨Mud","🔥Fire","🧱Brick"],
   ["🧱Brick","🧱Brick","🏠House"],
   ["🧱Brick","💧Water","🧱Wet Brick"],
@@ -417,8 +391,6 @@ const RAW = [
   ["🪚Wood Plank","🛠️Tool","📦Box"],
   ["🪟Glass","🌬️Wind","🪟Window"],
   ["🪟Glass","🌍Earth","🏺Bottle"],
-
-  
   ["🥛Milk","🔥Fire","🧀Cheese"],
   ["🧀Cheese","🍞Bread","🥪Sandwich"],
   ["🍯Honey","🌾Field","🍰Cake"],
@@ -429,8 +401,6 @@ const RAW = [
   ["🍕Pizza","🍍Pineapple","🍍Pineapple Pizza"],
   ["🍍Pineapple","🍕Pizza","🍍Pizza Debate"],
   ["🍍Pizza Debate","🔥Fire","🔥Spicy Debate"],
-
-  
   ["🐟Fish","🐟Fish","🐠School of Fish"],
   ["🐟Fish","🔥Fire","🍣Cooked Fish"],
   ["🐟Fish","🌊Ocean","🐠Tropical Fish"],
@@ -442,8 +412,6 @@ const RAW = [
   ["🐾Dog Duo","📺YouTube","🐕Dog Video"],
   ["🐾Dog Duo","📹Video","🐶Dog Vlog"],
   ["🦴Bone","🐶Dog","🐕Happy Dog"],
-
-  
   ["🔋Energy","⚙️Machine","🤖Robot"],
   ["🔋Energy","💧Water","⚡Electricity"],
   ["⚡Electricity","⚙️Machine","💻Computer"],
@@ -457,8 +425,6 @@ const RAW = [
   ["🌐Internet","🌐Internet","🕸️Web Empire"],
   ["🌐Internet","💻Computer","📱Website"],
   ["🌐Internet","📺YouTube","🎬Content"],
-
-  
   ["📺YouTube","📺YouTube","📡Livestream"],
   ["📺YouTube","🎥Channel","📺Channel"],
   ["📺YouTube","🌬️Wind","🎥Channel"],
@@ -480,8 +446,6 @@ const RAW = [
   ["👤User","👤User","👥Community"],
   ["🎬Content","🔥Fire","🔥Trending"],
   ["🔥Trending","📺YouTube","📈Algorithm"],
-
-  
   ["🧑‍🦱JackSucksAtLife","📺YouTube","📺JackSucksAtLife"],
   ["🧑‍🦱JackSucksAtLife","📺YouTube","📺No Context JackSucksAtLife"],
   ["📺JackSucksAtLife","🎥Video","📺JackSucksAtStuff"],
@@ -524,8 +488,6 @@ const RAW = [
   ["🌍JackSucksAtGeography","🗺️Map Challenge","🌎Country Quiz"],
   ["🌍JackSucksAtGeography","🗺️World Map","🌎Geo Master"],
   ["🏆Geography Champion","📺YouTube","🧑‍🦱JackSucksAtGeography"],
-
-  
   ["🏆Play Button","📺YouTube","🥈Silver Play Button"],
   ["🥈Silver Play Button","🏆Play Button","🥇Gold Play Button"],
   ["🥇Gold Play Button","🏆Play Button","💎Diamond Play Button"],
@@ -540,8 +502,6 @@ const RAW = [
   ["📦Play Button Collection","📹Video","🎥Play Button Tour"],
   ["📦Play Button Collection","👑YouTube Legend","💎Creator Museum"],
   ["📦Play Button Collection","🔥Fire","🔥Play Button Viral"],
-
-  
   ["🎮Skycade","🧑‍🦱JackSucksAtLife","🖥️Minecraft Server"],
   ["🎮Skycade","⛏️Minecraft","🧱Skycade Base"],
   ["🎮Skycade","👥Community","🎮Skycade Players"],
@@ -554,8 +514,6 @@ const RAW = [
   ["🏗️Minecraft Build","📹Video","🎥Minecraft Video"],
   ["🧱Skycade Base","🏗️Minecraft Build","🏰Skycade Castle"],
   ["🏰Skycade Castle","📹Video","🎥Castle Build Video"],
-
-  
   ["👥r/jacksucksatlife","👥r/jacksucksatlife","📌Mega Thread"],
   ["👥r/jacksucksatlife","🌬️Wind","💬Reddit Thread"],
   ["👥r/jacksucksatlife","🔥Fire","🧑LizardLava"],
@@ -594,8 +552,6 @@ const RAW = [
   ["💩Turdboi420","🔥Fire","💩Legendary Meme"],
   ["💩Legendary Meme","💩Turdboi420","💩Ultimate Meme"],
   ["💩Ultimate Meme","💩Turdboi420","💩Meme King"],
-
-  
   ["🚗Tesla","🚗Tesla","🚗Tesla Fleet"],
   ["🚗Tesla","💧Water","🚘Car Channel"],
   ["🚗Tesla","🔥Fire","🔋Battery"],
@@ -604,23 +560,17 @@ const RAW = [
   ["🚘Car Channel","📺YouTube","📺Jack Massey Welsh"],
   ["🔋Battery","🌬️Wind","⚡Electric Car"],
   ["🔋Battery","🔋Battery","⚡Battery Pack"],
-
-  
   ["🌳Wee Wee Bush","📹Video","😂Running Joke"],
   ["🌳Wee Wee Bush","💧Water","🌳Watered Bush"],
   ["🌳Wee Wee Bush","🌳Wee Wee Bush","🌳Wee Wee Forest"],
   ["🌳Watered Bush","🌬️Wind","🍃Shaking Bush"],
   ["🍃Shaking Bush","📹Video","😂Bush Clip"],
   ["😂Running Joke","📺YouTube","🧠JSAL Lore"],
-
-  
   ["🎭Pink Wig Promise","📺YouTube","🎬Legendary Bet"],
   ["🎭Pink Wig Promise","👥r/jacksucksatlife","😂Pink Wig Meme"],
   ["🎭Pink Wig Promise","🎭Pink Wig Promise","🎭Double Pink Wig"],
   ["🎬Legendary Bet","🔥Fire","😂Iconic Moment"],
   ["😂Iconic Moment","📹Video","🎞️JSAL Clip"],
-
-  
   ["📈100M Subscribers","📺YouTube","🏆Mega Creator"],
   ["🏆Mega Creator","📹Video","🎥Massive Upload"],
   ["🎥Massive Upload","🔥Fire","🔥Trending Page"],
@@ -632,8 +582,6 @@ const RAW = [
   ["📺Channel","▶️Subscriber","📈Algorithm"],
   ["📈Algorithm","📺YouTube","📊Trending"],
   ["📊Trending","⭐YouTuber","🚀Viral Video"],
-
-  
   ["📢Viral Moment","📺YouTube","🧻Turdboi420"],
   ["😂Random Clip","🌬️Wind","📢Viral Moment"],
   ["📺No Context JackSucksAtLife","🔥Fire","😂Random Clip"],
@@ -650,8 +598,6 @@ const RAW = [
   ["🎬Legendary Video","📺YouTube","🏆Iconic Upload"],
   ["🏆Creator Award","📦Play Button Collection","🥇Gold Trophy"],
   ["💎Creator Museum","📹Video","🎥Museum Tour"],
-
-  
   ["🌍Earth","🌪️Tornado","🌍Atmosphere"],
   ["🌍Atmosphere","🔥Fire","☀️Sun"],
   ["☀️Sun","🌍Earth","🌎Planet"],
@@ -659,8 +605,6 @@ const RAW = [
   ["🌌Solar System","🌌Solar System","🌌Galaxy"],
   ["⏳Time","🏰Castle","🏛️Ruins"],
   ["⏳Time","🌱Plant","🌳Growth"],
-
-  
   ["👤Human","🏠House","👨‍👩‍👧Family"],
   ["👤Human","💻Computer","👨‍💻Programmer"],
   ["👑King","👥Community","👑Kingdom"],
@@ -668,8 +612,6 @@ const RAW = [
   ["🚧Traffic Cone","📺YouTube","🎴Traffic Cone Becky"],
   ["🐶Kong","🐶Dog","🐕Flossy"],
   ["🐕Flossy","🏡Home","🐾Dog Chaos"],
-
-  
   ["🧑‍🦱JackSucksAtLife","🌊Ocean","🏝️Jack Island"],
   ["🧑‍🦱JackSucksAtLife","⛰️Mountain","⛰️Mountain Jack"],
   ["🧑‍🦱JackSucksAtLife","🌧️Rain","🌧️Rainy Jack"],
@@ -696,8 +638,6 @@ const RAW = [
   ["🌳Bush","😂Meme","🎴The Wee Wee Bush"],
   ["🐶Kong","📹Video","📹Kong Video"],
   ["🐕Flossy","📹Video","📹Flossy Video"],
-
-  
   ["🗺️World Map","🌬️Wind","🧭Compass"],
   ["🧭Compass","🌍Earth","🧭Explorer"],
   ["🧭Explorer","📹Video","🎥Explorer Video"],
@@ -711,8 +651,6 @@ const RAW = [
   ["🌍Geography Lesson","📹Video","🎥Geography Clip"],
   ["🎥Geography Clip","🔥Fire","🔥Geography Viral"],
   ["📺Geography Throwback","📹Video","🎥Throwback Video"],
-
-  
   ["🎥YouTube Video","🔥Fire","🔥Trending Video"],
   ["🔥Trending Video","📺YouTube","📈Algorithm Boost"],
   ["📈Algorithm Boost","📹Video","🚀Exploding Channel"],
@@ -728,8 +666,6 @@ const RAW = [
   ["🏆Milestone","🥇Gold Play Button","💎Diamond Play Button"],
   ["🏆Milestone","💎Diamond Play Button","🔴Red Diamond Play Button"],
   ["📺Channel","📊Channel Stats","🏆Milestone"],
-
-  
   ["🌾Rustling Wheat","🌍Earth","🌾Wheat Farm"],
   ["🌾Rustling Wheat","💧Water","🌾Wet Wheat"],
   ["🌾Rustling Wheat","🌬️Wind","🌾Blowing Wheat"],
@@ -910,17 +846,10 @@ const RAW = [
   ["🧀Cheese","🔥Fire","🍕Melted Cheese"],
   ["🧀Cheese","🍞Bread","🥪Cheese Sandwich"],
   ["🧀Cheese","🌬️Wind","🧀Aged Cheese"],
-  ["🐚Shell","🐚Shell","🐚Shell Collection"],
-  ["🐚Shell","💧Water","🐚Washed Shell"],
-  ["🦪Pearl","🦪Pearl","💎Pearl Necklace"],
-  ["🦪Pearl","🔥Fire","💎Polished Pearl"],
-  ["🎺Horn","🌬️Wind","🎵Horn Call"],
-  ["🎺Horn","🎺Horn","🎶Horn Duet"],
   ["🐟Fish","🐟Fish","🐠School of Fish"],
   ["🐟Fish","🔥Fire","🍣Cooked Fish"],
   ["🐟Fish","🌍Earth","🐟River Fish"],
   ["🐟Fish","🌬️Wind","🎣Fishing Trip"],
-  ["🐟Fish","⛵Boat","🎣Fishing Boat"],
   ["🌿Bush","🌿Bush","🌲Hedge"],
   ["🌿Bush","💧Water","🌿Wet Bush"],
   ["🌿Bush","🔥Fire","🌾Burnt Bush"],
@@ -935,10 +864,6 @@ const RAW = [
   ["🌪️Dust Storm","🌍Earth","🏜️Dust Bowl"],
   ["🌪️Dust Storm","☁️Cloud","🌧️Dust Rain"],
   ["🌪️Dust Storm","🔥Fire","💥Firestorm"],
-  ["🪟Fulgurite","🌍Earth","💎Rare Mineral"],
-  ["🪟Fulgurite","💧Water","🔬Specimen"],
-  ["🚿Pump","💧Water","🌊Water Supply"],
-  ["🚿Pump","🌍Earth","🏗️Well"],
   ["🌀Windmill","🌬️Wind","⚡Wind Energy"],
   ["🌀Windmill","🌾Field","🌾Mill"],
   ["☀️Solar Panel","☀️Sun","⚡Solar Power"],
@@ -964,18 +889,12 @@ const RAW = [
   ["🌲Jungle","💧Water","🌊River Jungle"],
   ["🌲Jungle","🔥Fire","🔥Jungle Fire"],
   ["🌲Jungle","🌍Earth","🌍Jungle Floor"],
-  ["🐠Aquarium","💧Water","🐟Full Aquarium"],
-  ["🐠Aquarium","🔥Fire","🌡️Warm Tank"],
-  ["🐠Aquarium","🌱Plant","🌿Planted Tank"],
   ["🌎Planet","💧Water","🌊Ocean World"],
   ["🌎Planet","🔥Fire","🌋Lava Planet"],
   ["🌎Planet","🌬️Wind","🌪️Stormy Planet"],
   ["🌌Solar System","🌌Solar System","🌌Galaxy"],
   ["🌌Solar System","🔥Fire","⭐Star"],
   ["🌌Solar System","💧Water","🌊Ice Planet"],
-  ["🌀Turbine","🌀Turbine","⚡Power Plant"],
-  ["🔌Power Grid","🔌Power Grid","🌆City Power"],
-  ["🔌Power Grid","💧Water","⚡Hydroplant"],
   ["🏭Factory","🏭Factory","🌆Industrial City"],
   ["🏭Factory","💧Water","🏭Steam Factory"],
   ["🏭Factory","🌬️Wind","💨Factory Smoke"],
@@ -988,10 +907,6 @@ const RAW = [
   ["👑Kingdom","💧Water","🌊Island Kingdom"],
   ["👑Kingdom","🔥Fire","🔥Kingdom Fire"],
   ["👑Kingdom","🌍Earth","🌍Empire"],
-  ["🏗️Wall","🏗️Wall","🏰Castle"],
-  ["🏗️Wall","💧Water","🏗️Wet Wall"],
-  ["🏗️Wall","🔥Fire","🏗️Crumbling Wall"],
-  ["🏗️Wall","🌱Plant","🌿Ivy Wall"],
   ["🌍Atmosphere","💧Water","☁️Weather"],
   ["🌍Atmosphere","🌬️Wind","🌬️Jet Stream"],
   ["🌍Atmosphere","🌱Plant","🌿Oxygen"],
@@ -1017,130 +932,120 @@ const RAW = [
   ["🧊Ice","🧊Ice","❄️Ice Sheet"],
   ["🧊Ice","🌍Earth","🏔️Glacier"],
   ["🧊Ice","🌱Plant","❄️Frozen Plant"],
-
-  
-  ["🎬Classic Clip","📹Video","🎞️Throwback Clip"],
-  ["🎞️Throwback Clip","📺YouTube","📼Old Upload"],
-  ["📼Old Upload","📺YouTube","🗃️Archive Video"],
-  ["🗃️Archive Video","📺YouTube","📼Legacy Channel"],
-  ["📼Legacy Channel","📺YouTube","📺jackmw"],
-  ["📼Old Channel","📺YouTube","📺SamSmellsOfApricot"],
-  ["📺SamSmellsOfApricots","🍑Apricot","😂Channel Joke"],
-  ["😂Channel Joke","📺YouTube","🎬Weird Channel Name"],
-["🌍Earth","💧Water","🌱Life"],
-["🌱Life","🌍Earth","👤Human"],
-["👤Human","📺YouTube","🧑‍🦱Jack"],
-["👤Human","📹Video","🧑‍🦱Jack"],
-["👤Human","🌐Internet","🧑‍🦱Jack"],
-["👤Human","🎥Channel","🧑‍🦱Jack"],
-["👤Human","🎬Content","🧑‍🦱Jack"],
-["👨‍💻Programmer","📺YouTube","🧑‍🦱Jack"],
-["👨‍💻Programmer","📹Video","🧑‍🦱Jack"],
-["🎥Channel","📺YouTube","🧑‍🦱Jack"],
-["📹Video","📺YouTube","🧑‍🦱Jack"],
-["👤Human","🔥Viral Video","🧑‍🦱Jack"],
-["👤Human","🔥Trending","🧑‍🦱Jack"],
-["📺YouTube","⭐YouTuber","🧑‍🦱Jack"],
-["📺YouTube","🎬Content","🧑‍🦱Jack"],
-["👤Human","🌍Earth","🧑‍🦱Jack"],
-["👤Human","🌳Tree","🧑‍🦱Jack"],
-["👤Human","🐶Dog","🧑‍🦱Jack"],
-["👤Human","🎮Game","🧑‍🦱Jack"],
-["👤Human","🌐Web Dev","🧑‍🦱Jack"],
-["🎬Series","📺YouTube","🧑‍🦱Jack"],
-["📹Video","🌐Internet","🧑‍🦱Jack"],
-["👤Human","📦Collection","🧑‍🦱Jack"],
-["👤Human","🏆Play Button","🧑‍🦱Jack"],
-["🧑‍🦱Jack","📺YouTube","🧑‍🦱JackSucksAtLife"],
-["🧑‍🦱Jack","🌱Life","🧑‍🦱JackSucksAtLife"],
-["🧑‍🦱Jack","🎥Channel","🧑‍🦱JackSucksAtLife"],
-["🧑‍🦱Jack","📹Video","🧑‍🦱JackSucksAtLife"],
-["🧑‍🦱Jack","🌐Internet","🧑‍🦱JackSucksAtLife"],
-["🧑‍🦱Jack","▶️Subscriber","🧑‍🦱JackSucksAtLife"],
-["🧑‍🦱Jack","🔥Viral Video","🧑‍🦱JackSucksAtLife"],
-["🧑‍🦱Jack","📈Algorithm","🧑‍🦱JackSucksAtLife"],
-["🧑‍🦱Jack","🏆Play Button","🧑‍🦱JackSucksAtLife"],
-["📺YouTube","💰Money","🧑MrBeast"],
-["📺YouTube","🎁Giveaway","🧑MrBeast"],
-["📺YouTube","🔥Viral Video","🧑MrBeast"],
-["📺YouTube","📈Algorithm","🧑MrBeast"],
-["💰Money","📹Video","🧑MrBeast"],
-["🎁Giveaway","📹Video","🧑MrBeast"],
-["🎬Content","💰Money","🧑MrBeast"],
-["⭐YouTuber","💰Money","🧑MrBeast"],
-["⭐YouTuber","🎁Giveaway","🧑MrBeast"],
-["📺Channel","💰Money","🧑MrBeast"],
-["📺YouTube","🎮Game","🧑PewDiePie"],
-["📺YouTube","😂Meme","🧑PewDiePie"],
-["📺YouTube","🎬Content","🧑PewDiePie"],
-["🎮Game","📹Video","🧑PewDiePie"],
-["🎮Game","🔥Viral Video","🧑PewDiePie"],
-["😂Meme","📹Video","🧑PewDiePie"],
-["🎮Game","⭐YouTuber","🧑PewDiePie"],
-["📺Channel","🎮Game","🧑PewDiePie"],
-["🔥Trending","🎮Game","🧑PewDiePie"],
-["📺YouTube","🔥Trending","🧑PewDiePie"],
-["🧑‍🦱JackSucksAtLife","😂Running Joke","🧠JSAL Lore"],
-["🧠JSAL Lore","📹Video","🎞️Inside Joke"],
-["🎞️Inside Joke","📺YouTube","😂JSAL Meme"],
-["😂JSAL Meme","📹Video","😂Legendary Clip"],
-["😂Legendary Clip","🔥Fire","🔥Iconic Moment"],
-["🔥Iconic Moment","📺YouTube","🎬JSAL Classic"],
-["🧑‍🦱JackSucksAtLife","🌱Plant","🌳Wee Wee Bush"],
-["🌳Wee Wee Bush","📹Video","😂Wee Wee Clip"],
-["🌳Wee Wee Bush","💧Water","🌳Watered Bush"],
-["🌳Wee Wee Bush","🌳Wee Wee Bush","🌳Wee Wee Forest"],
-["🌳Wee Wee Forest","📹Video","😂Wee Wee Saga"],
-["🌳Wee Wee Forest","🌲Forest","🌲Bush Kingdom"],
-["🧑‍🦱JackSucksAtLife","🎨Pink","🎭Pink Wig Promise"],
-["🎭Pink Wig Promise","📺YouTube","🎬Legendary Bet"],
-["🎭Pink Wig Promise","👥r/jacksucksatlife","😂Pink Wig Meme"],
-["🎭Pink Wig Promise","🎭Pink Wig Promise","🎭Double Pink Wig"],
-["🎭Double Pink Wig","📹Video","😂Ultimate Wig Moment"],
-["📢Viral Moment","📺YouTube","💩Turdboi420"],
-["💩Turdboi420","📺YouTube","💩Turdboi Channel"],
-["💩Turdboi420","🔥Fire","💩Legendary Meme"],
-["💩Legendary Meme","💩Turdboi420","💩Ultimate Meme"],
-["💩Ultimate Meme","💩Turdboi420","💩Meme King"],
-["💩Meme King","📺YouTube","😂Legendary Meme Channel"],
-["🧑‍🦱JackSucksAtLife","🐶Dog","🐶Kong"],
-["🐶Kong","🐶Dog","🐕Flossy"],
-["🐶Kong","📹Video","📹Kong Video"],
-["🐕Flossy","📹Video","📹Flossy Video"],
-["🐶Kong","🦴Bone","🐕Happy Kong"],
-["🐕Flossy","🏡Home","🐾Dog Chaos"],
-["📺YouTube","👥Community","👥r/jacksucksatlife"],
-["👥r/jacksucksatlife","👥r/jacksucksatlife","📌Mega Thread"],
-["👥r/jacksucksatlife","📹Video","💬Reddit Post"],
-["💬Reddit Post","🔥Fire","🔥Reddit Drama"],
-["🔥Reddit Drama","💬Reddit Post","🔥Reddit War"],
-["🔥Reddit War","📺YouTube","😂Reddit Reaction"],
-["🧑‍🦱JackSucksAtLife","👩Becky","💑Jack & Becky"],
-["💑Jack & Becky","🏡Home","🏠Couple Vlog"],
-["🧑‍🦱JackSucksAtLife","🧑‍💻Kai","✂️Kai the Editor"],
-["✂️Kai the Editor","📹Video","🎬Perfect Cut"],
-["🎬Perfect Cut","🔥Fire","🔥Funny Moment"],
-["🧑‍🦱JackSucksAtLife","👬Friend","👬Jack & Oscar"],
-["🧑‍🦱JackSucksAtLife","📦Collection","📦Play Button Collection"],
-["📦Play Button Collection","🥈Silver Play Button","📦More Play Buttons"],
-["📦More Play Buttons","🥇Gold Play Button","📦Huge Play Button Collection"],
-["📦Huge Play Button Collection","💎Diamond Play Button","📦Ultimate Play Button Shelf"],
-["📦Ultimate Play Button Shelf","📹Video","🎥Play Button Tour"],
-["📦Play Button Collection","👑YouTube Legend","💎Creator Museum"],
-["🧑‍🦱JackSucksAtLife","🎮Game","🎮Skycade"],
-["🎮Skycade","🎮Skycade","🎮Skycade 2.0"],
-["🎮Skycade","📹Video","🎮Skycade Video"],
-["🎮Skycade","👥Community","🎮Skycade Players"],
-["🎮Skycade","⛏️Minecraft","🧱Skycade Base"],
-["🧱Skycade Base","🏗️Minecraft Build","🏰Skycade Castle"],
-["🏰Skycade Castle","📹Video","🎥Castle Build Video"],
-["🧑‍🦱JackSucksAtLife","🚽Toilet","🎴Toilet Mutant Jack"],
-["🧑‍🦱JackSucksAtLife","🎨Pink","🎴Pink Hair Jack"],
-["🧑‍🦱JackSucksAtLife","🚲Unicycle","🎴Jack On A Unicycle"],
-["🧑‍🦱JackSucksAtLife","🤖Robot","🤖AI Jack"],
-["🤖AI Jack","📺YouTube","🤖AI Channel"],
-["🧑‍🦱JackSucksAtLife","🍕Pizza","🍕Jack Orders Pizza"],
-["🧑‍🦱JackSucksAtLife","☕Coffee","☕Caffeinated Jack"],
+  ["🌍Earth","💧Water","🌱Life"],
+  ["🌱Life","🌍Earth","👤Human"],
+  ["👤Human","📺YouTube","🧑‍🦱Jack"],
+  ["👤Human","📹Video","🧑‍🦱Jack"],
+  ["👤Human","🌐Internet","🧑‍🦱Jack"],
+  ["👤Human","🎥Channel","🧑‍🦱Jack"],
+  ["👤Human","🎬Content","🧑‍🦱Jack"],
+  ["👨‍💻Programmer","📺YouTube","🧑‍🦱Jack"],
+  ["👨‍💻Programmer","📹Video","🧑‍🦱Jack"],
+  ["🎥Channel","📺YouTube","🧑‍🦱Jack"],
+  ["📹Video","📺YouTube","🧑‍🦱Jack"],
+  ["👤Human","🔥Viral Video","🧑‍🦱Jack"],
+  ["👤Human","🔥Trending","🧑‍🦱Jack"],
+  ["📺YouTube","⭐YouTuber","🧑‍🦱Jack"],
+  ["📺YouTube","🎬Content","🧑‍🦱Jack"],
+  ["👤Human","🌍Earth","🧑‍🦱Jack"],
+  ["👤Human","🌳Tree","🧑‍🦱Jack"],
+  ["👤Human","🐶Dog","🧑‍🦱Jack"],
+  ["👤Human","🎮Game","🧑‍🦱Jack"],
+  ["👤Human","🌐Web Dev","🧑‍🦱Jack"],
+  ["🎬Series","📺YouTube","🧑‍🦱Jack"],
+  ["📹Video","🌐Internet","🧑‍🦱Jack"],
+  ["👤Human","📦Collection","🧑‍🦱Jack"],
+  ["👤Human","🏆Play Button","🧑‍🦱Jack"],
+  ["🧑‍🦱Jack","📺YouTube","🧑‍🦱JackSucksAtLife"],
+  ["🧑‍🦱Jack","🌱Life","🧑‍🦱JackSucksAtLife"],
+  ["🧑‍🦱Jack","🎥Channel","🧑‍🦱JackSucksAtLife"],
+  ["🧑‍🦱Jack","📹Video","🧑‍🦱JackSucksAtLife"],
+  ["🧑‍🦱Jack","🌐Internet","🧑‍🦱JackSucksAtLife"],
+  ["🧑‍🦱Jack","▶️Subscriber","🧑‍🦱JackSucksAtLife"],
+  ["🧑‍🦱Jack","🔥Viral Video","🧑‍🦱JackSucksAtLife"],
+  ["🧑‍🦱Jack","📈Algorithm","🧑‍🦱JackSucksAtLife"],
+  ["🧑‍🦱Jack","🏆Play Button","🧑‍🦱JackSucksAtLife"],
+  ["📺YouTube","💰Money","🧑MrBeast"],
+  ["📺YouTube","🎁Giveaway","🧑MrBeast"],
+  ["📺YouTube","🔥Viral Video","🧑MrBeast"],
+  ["📺YouTube","📈Algorithm","🧑MrBeast"],
+  ["💰Money","📹Video","🧑MrBeast"],
+  ["🎁Giveaway","📹Video","🧑MrBeast"],
+  ["🎬Content","💰Money","🧑MrBeast"],
+  ["⭐YouTuber","💰Money","🧑MrBeast"],
+  ["⭐YouTuber","🎁Giveaway","🧑MrBeast"],
+  ["📺Channel","💰Money","🧑MrBeast"],
+  ["📺YouTube","🎮Game","🧑PewDiePie"],
+  ["📺YouTube","😂Meme","🧑PewDiePie"],
+  ["📺YouTube","🎬Content","🧑PewDiePie"],
+  ["🎮Game","📹Video","🧑PewDiePie"],
+  ["🎮Game","🔥Viral Video","🧑PewDiePie"],
+  ["😂Meme","📹Video","🧑PewDiePie"],
+  ["🎮Game","⭐YouTuber","🧑PewDiePie"],
+  ["📺Channel","🎮Game","🧑PewDiePie"],
+  ["🔥Trending","🎮Game","🧑PewDiePie"],
+  ["📺YouTube","🔥Trending","🧑PewDiePie"],
+  ["🧑‍🦱JackSucksAtLife","😂Running Joke","🧠JSAL Lore"],
+  ["🧠JSAL Lore","📹Video","🎞️Inside Joke"],
+  ["🎞️Inside Joke","📺YouTube","😂JSAL Meme"],
+  ["😂JSAL Meme","📹Video","😂Legendary Clip"],
+  ["😂Legendary Clip","🔥Fire","🔥Iconic Moment"],
+  ["🔥Iconic Moment","📺YouTube","🎬JSAL Classic"],
+  ["🧑‍🦱JackSucksAtLife","🌱Plant","🌳Wee Wee Bush"],
+  ["🌳Wee Wee Bush","📹Video","😂Wee Wee Clip"],
+  ["🌳Wee Wee Bush","💧Water","🌳Watered Bush"],
+  ["🌳Wee Wee Bush","🌳Wee Wee Bush","🌳Wee Wee Forest"],
+  ["🌳Wee Wee Forest","📹Video","😂Wee Wee Saga"],
+  ["🌳Wee Wee Forest","🌲Forest","🌲Bush Kingdom"],
+  ["🧑‍🦱JackSucksAtLife","🎨Pink","🎭Pink Wig Promise"],
+  ["🎭Pink Wig Promise","📺YouTube","🎬Legendary Bet"],
+  ["🎭Pink Wig Promise","👥r/jacksucksatlife","😂Pink Wig Meme"],
+  ["🎭Pink Wig Promise","🎭Pink Wig Promise","🎭Double Pink Wig"],
+  ["🎭Double Pink Wig","📹Video","😂Ultimate Wig Moment"],
+  ["📢Viral Moment","📺YouTube","💩Turdboi420"],
+  ["💩Turdboi420","📺YouTube","💩Turdboi Channel"],
+  ["💩Turdboi420","🔥Fire","💩Legendary Meme"],
+  ["💩Legendary Meme","💩Turdboi420","💩Ultimate Meme"],
+  ["💩Ultimate Meme","💩Turdboi420","💩Meme King"],
+  ["💩Meme King","📺YouTube","😂Legendary Meme Channel"],
+  ["🧑‍🦱JackSucksAtLife","🐶Dog","🐶Kong"],
+  ["🐶Kong","🐶Dog","🐕Flossy"],
+  ["🐶Kong","📹Video","📹Kong Video"],
+  ["🐕Flossy","📹Video","📹Flossy Video"],
+  ["🐶Kong","🦴Bone","🐕Happy Kong"],
+  ["🐕Flossy","🏡Home","🐾Dog Chaos"],
+  ["📺YouTube","👥Community","👥r/jacksucksatlife"],
+  ["👥r/jacksucksatlife","👥r/jacksucksatlife","📌Mega Thread"],
+  ["👥r/jacksucksatlife","📹Video","💬Reddit Post"],
+  ["💬Reddit Post","🔥Fire","🔥Reddit Drama"],
+  ["🔥Reddit Drama","💬Reddit Post","🔥Reddit War"],
+  ["🔥Reddit War","📺YouTube","😂Reddit Reaction"],
+  ["🧑‍🦱JackSucksAtLife","👩Becky","💑Jack & Becky"],
+  ["💑Jack & Becky","🏡Home","🏠Couple Vlog"],
+  ["🧑‍🦱JackSucksAtLife","🧑‍💻Kai","✂️Kai the Editor"],
+  ["✂️Kai the Editor","📹Video","🎬Perfect Cut"],
+  ["🎬Perfect Cut","🔥Fire","🔥Funny Moment"],
+  ["🧑‍🦱JackSucksAtLife","👬Friend","👬Jack & Oscar"],
+  ["🧑‍🦱JackSucksAtLife","📦Collection","📦Play Button Collection"],
+  ["📦Play Button Collection","🥈Silver Play Button","📦More Play Buttons"],
+  ["📦More Play Buttons","🥇Gold Play Button","📦Huge Play Button Collection"],
+  ["📦Huge Play Button Collection","💎Diamond Play Button","📦Ultimate Play Button Shelf"],
+  ["📦Ultimate Play Button Shelf","📹Video","🎥Play Button Tour"],
+  ["📦Play Button Collection","👑YouTube Legend","💎Creator Museum"],
+  ["🧑‍🦱JackSucksAtLife","🎮Game","🎮Skycade"],
+  ["🎮Skycade","🎮Skycade","🎮Skycade 2.0"],
+  ["🎮Skycade","📹Video","🎮Skycade Video"],
+  ["🎮Skycade","👥Community","🎮Skycade Players"],
+  ["🎮Skycade","⛏️Minecraft","🧱Skycade Base"],
+  ["🧱Skycade Base","🏗️Minecraft Build","🏰Skycade Castle"],
+  ["🏰Skycade Castle","📹Video","🎥Castle Build Video"],
+  ["🧑‍🦱JackSucksAtLife","🚽Toilet","🎴Toilet Mutant Jack"],
+  ["🧑‍🦱JackSucksAtLife","🎨Pink","🎴Pink Hair Jack"],
+  ["🧑‍🦱JackSucksAtLife","🚲Unicycle","🎴Jack On A Unicycle"],
+  ["🧑‍🦱JackSucksAtLife","🤖Robot","🤖AI Jack"],
+  ["🤖AI Jack","📺YouTube","🤖AI Channel"],
+  ["🧑‍🦱JackSucksAtLife","🍕Pizza","🍕Jack Orders Pizza"],
+  ["🧑‍🦱JackSucksAtLife","☕Coffee","☕Caffeinated Jack"],
 ];
 
 const COMBO_MAP = (() => {
@@ -1176,18 +1081,14 @@ function isPrimitive(name) {
 }
 
 function smartFallback(na, nb) {
-  
   if (!isPrimitive(na) || !isPrimitive(nb)) return null;
-
   const a = na.replace(/\s+/g,''), b = nb.replace(/\s+/g,'');
   const candidate = a.slice(0, Math.ceil(a.length/2)) + b.slice(Math.floor(b.length/2));
-
   if (candidate.length < 4) return null;
   if (!/[aeiouAEIOU]/.test(candidate)) return null;
   const vowels = (candidate.match(/[aeiouAEIOU]/g)||[]).length;
   const ratio  = vowels / candidate.length;
   if (ratio < 0.2 || ratio > 0.8) return null;
-
   const pool = ['✨','🔮','💫','🌀','⚡','🎭','💥','🌟','🔥','💎','🪄','🌈'];
   return {
     emoji: pool[(a.charCodeAt(0)+b.charCodeAt(0)) % pool.length],
@@ -1202,8 +1103,13 @@ const STARTERS = [
   { emoji:'🌍', name:'Earth' },
 ];
 
-let discovered = STARTERS.map((s,i)=>({...s,id:i,time:i}));
-let nextId     = STARTERS.length;
+// ─── Load saved discoveries or fall back to starters ──────────────────────────
+const saved = loadDiscovered();
+let discovered = saved && saved.length >= 4
+  ? saved
+  : STARTERS.map((s,i) => ({...s, id:i, time:i}));
+let nextId     = Math.max(...discovered.map(d => d.id), STARTERS.length - 1) + 1;
+
 let canvasEls  = [];
 let dragging   = null, dragOffX=0, dragOffY=0;
 let draggingFromSidebar=null, sidebarGhost=null;
@@ -1248,34 +1154,30 @@ function playSound(t){
         g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+i*0.1+0.18);
         o.start(c.currentTime+i*0.1);o.stop(c.currentTime+i*0.1+0.18);
       });
-    }else if(t==='global'){
-      [392,523,659,784,1047].forEach((f,i)=>{
-        const o=c.createOscillator(),g=c.createGain();
-        o.connect(g);g.connect(c.destination);
-        o.frequency.value=f;
-        g.gain.setValueAtTime(0.14,c.currentTime+i*0.08);
-        g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+i*0.08+0.18);
-        o.start(c.currentTime+i*0.08);o.stop(c.currentTime+i*0.08+0.18);
-      });
     }
   }catch(e){}
 }
 
-const savedUser=localStorage.getItem('jcraft_username');
-if(savedUser){ username=savedUser; document.getElementById('modalOverlay').style.display='none'; }
-document.getElementById('modalConfirm').onclick=()=>{
-  username=document.getElementById('usernameInput').value.trim()||'Anonymous';
-  localStorage.setItem('jcraft_username',username);
-  document.getElementById('modalOverlay').style.display='none';
+// ─── Username modal ────────────────────────────────────────────────────────────
+const savedUser = localStorage.getItem(STORAGE_KEY_USER);
+if (savedUser) {
+  username = savedUser;
+  document.getElementById('modalOverlay').style.display = 'none';
+}
+document.getElementById('modalConfirm').onclick = () => {
+  username = document.getElementById('usernameInput').value.trim() || 'Anonymous';
+  localStorage.setItem(STORAGE_KEY_USER, username);
+  document.getElementById('modalOverlay').style.display = 'none';
 };
-document.getElementById('modalSkip').onclick=()=>{
-  username='Anonymous';
-  document.getElementById('modalOverlay').style.display='none';
+document.getElementById('modalSkip').onclick = () => {
+  username = 'Anonymous';
+  document.getElementById('modalOverlay').style.display = 'none';
 };
-document.getElementById('usernameInput').addEventListener('keydown',e=>{
-  if(e.key==='Enter') document.getElementById('modalConfirm').click();
+document.getElementById('usernameInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('modalConfirm').click();
 });
 
+// ─── Sidebar rendering ─────────────────────────────────────────────────────────
 function renderSidebar(){
   let items=[...discovered];
   if(sortMode==='time') items.sort((a,b)=>b.time-a.time);
@@ -1292,6 +1194,7 @@ function renderSidebar(){
   document.getElementById('itemCount').textContent=
     `${discovered.length} element${discovered.length!==1?'s':''}`;
 }
+
 document.getElementById('searchInput').oninput=e=>{searchQ=e.target.value.toLowerCase();renderSidebar();};
 document.getElementById('tabDisc').onclick=()=>{
   sortMode='disc';
@@ -1306,9 +1209,10 @@ document.getElementById('tabTime').onclick=()=>{
   renderSidebar();
 };
 document.getElementById('tabTrash').onclick=()=>{
-  if(confirm('Reset all discoveries?')){
+  if(confirm('Reset all discoveries? This cannot be undone.')){
     discovered=STARTERS.map((s,i)=>({...s,id:i,time:i}));
     nextId=STARTERS.length;
+    saveDiscovered();
     renderSidebar();
   }
 };
@@ -1318,6 +1222,7 @@ document.getElementById('soundBtn').onclick=()=>{
 };
 document.getElementById('clearBtn').onclick=()=>{canvasEls.forEach(e=>e.remove());canvasEls=[];};
 
+// ─── Ghost drag helper ─────────────────────────────────────────────────────────
 function createGhost(data,cx,cy){
   const g=document.createElement('div');
   g.className='ghost';
@@ -1329,6 +1234,7 @@ function moveGhost(cx,cy){
   if(sidebarGhost){sidebarGhost.style.left=(cx-30)+'px';sidebarGhost.style.top=(cy-39)+'px';}
 }
 
+// ─── Sidebar drag ──────────────────────────────────────────────────────────────
 function onSidebarMouseDown(e,data){
   e.preventDefault();draggingFromSidebar=data;
   e.currentTarget.classList.add('dragging-from-sidebar');
@@ -1366,6 +1272,7 @@ function onSidebarTouchEnd(e){
   draggingFromSidebar=null;
 }
 
+// ─── Canvas instances ──────────────────────────────────────────────────────────
 function spawnInstance(data,x,y){
   if(x===undefined){
     x=60+Math.random()*(canvas.clientWidth-260);
@@ -1382,6 +1289,7 @@ function spawnInstance(data,x,y){
   return el;
 }
 
+// ─── Canvas drag ───────────────────────────────────────────────────────────────
 function onMouseDown(e){e.preventDefault();playSound('pickup');startDrag(e.currentTarget,e.clientX,e.clientY);window.addEventListener('mousemove',onMouseMove);window.addEventListener('mouseup',onMouseUp);}
 function onMouseMove(e){if(dragging)moveDrag(e.clientX,e.clientY);}
 function onMouseUp(){endDrag();window.removeEventListener('mousemove',onMouseMove);window.removeEventListener('mouseup',onMouseUp);}
@@ -1414,78 +1322,61 @@ function endDrag(){
   }
 }
 
-async function combine(a,b){
+// ─── Combine logic ─────────────────────────────────────────────────────────────
+function combine(a, b){
   const d1=a._data, d2=b._data;
-
   const defined = lookupCombo(d1.name, d2.name);
   const result  = defined || smartFallback(d1.name, d2.name);
 
-  
   if(!result){
-    
-    a.classList.remove('combining');
-    b.classList.remove('combining');
     a.style.left = (parseFloat(a.style.left) - 30) + 'px';
     b.style.left = (parseFloat(b.style.left) + 30) + 'px';
     return;
   }
 
   playSound('combine');
-  a.classList.add('combining');b.classList.add('combining');
+  a.classList.add('combining');
+  b.classList.add('combining');
 
-  const isNew = !discovered.find(e=>e.name===result.name);
+  const isNew = !discovered.find(e => e.name === result.name);
   if(isNew){
-    discovered.push({...result,id:nextId++,time:Date.now()});
+    discovered.push({...result, id:nextId++, time:Date.now()});
+    saveDiscovered();   // ← persist to localStorage
     renderSidebar();
     playSound('discovery');
   }
 
-  
-  let isGlobalFirst=false, globalDiscoverer=null;
-  if(isNew && window._claimDiscovery){
-    try{
-      const res=await window._claimDiscovery(result.name, username||'Anonymous');
-      isGlobalFirst=res.isFirst;
-      globalDiscoverer=res.discoverer;
-      if(isGlobalFirst) playSound('global');
-    }catch(e){}
+  document.getElementById('rEmoji').textContent = result.emoji;
+  document.getElementById('rName').textContent  = result.name;
+  document.getElementById('rCombo').textContent = `${d1.emoji} ${d1.name} + ${d2.emoji} ${d2.name}`;
+  const rFirst = document.getElementById('rFirst');
+  if(isNew){
+    rFirst.style.display = 'block';
+    rFirst.innerHTML = `<span>⭐ First Discovery!</span>`;
+  } else {
+    rFirst.style.display = 'none';
   }
 
-  document.getElementById('rEmoji').textContent=result.emoji;
-  document.getElementById('rName').textContent=result.name;
-  document.getElementById('rCombo').textContent=`${d1.emoji} ${d1.name} + ${d2.emoji} ${d2.name}`;
-  const rFirst=document.getElementById('rFirst');
-  if(isGlobalFirst){
-    rFirst.style.display='block';rFirst.className='first-disc global';
-    rFirst.innerHTML=`<span>🌍 WORLD FIRST — ${username||'Anonymous'}!</span>`;
-  }else if(isNew&&globalDiscoverer){
-    rFirst.style.display='block';rFirst.className='first-disc';
-    rFirst.innerHTML=`<span>⭐ First discovered by ${globalDiscoverer}</span>`;
-  }else if(isNew){
-    rFirst.style.display='block';rFirst.className='first-disc';
-    rFirst.innerHTML=`<span>⭐ First Discovery!</span>`;
-  }else{
-    rFirst.style.display='none';
-  }
   toast.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>toast.classList.remove('show'),2200);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
 
-  const mx=(parseFloat(a.style.left)+parseFloat(b.style.left))/2;
-  const my=(parseFloat(a.style.top)+parseFloat(b.style.top))/2;
-  a.remove();b.remove();
-  canvasEls=canvasEls.filter(e=>e!==a&&e!==b);
-  spawnInstance(result,mx,my);
+  const mx = (parseFloat(a.style.left) + parseFloat(b.style.left)) / 2;
+  const my = (parseFloat(a.style.top)  + parseFloat(b.style.top))  / 2;
+  a.remove(); b.remove();
+  canvasEls = canvasEls.filter(e => e !== a && e !== b);
+  spawnInstance(result, mx, my);
 }
 
+// ─── Init ──────────────────────────────────────────────────────────────────────
 renderSidebar();
-setTimeout(()=>{
-  const cx=canvas.clientWidth/2, cy=canvas.clientHeight/2;
+setTimeout(() => {
+  const cx = canvas.clientWidth / 2, cy = canvas.clientHeight / 2;
   spawnInstance(STARTERS[0], cx-320, cy-39);
   spawnInstance(STARTERS[1], cx-100, cy-39);
   spawnInstance(STARTERS[2], cx+120, cy-39);
   spawnInstance(STARTERS[3], cx-210, cy+80);
-},50);
+}, 50);
 </script>
 </body>
 </html>
