@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="icon" href="https://www.pngall.com/wp-content/uploads/5/Infinity.png" type="image/png">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jackfinite Craft</title>
@@ -10,6 +9,7 @@
 <style>
   :root {
     --sidebar-width: 300px;
+    --drawer-height: 42vh;
     --border: #c8c8c8;
     --item-border: #91a8c1;
     --instance-bg: linear-gradient(0deg, #f7feff, #fff 70%);
@@ -19,8 +19,12 @@
   body {
     font-family: 'Roboto', sans-serif;
     background: #fff; color: #040404;
-    height: 100vh; overflow: hidden; user-select: none;
+    height: 100vh; height: 100dvh;
+    overflow: hidden; user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
+
+  
   .title {
     position: fixed; top: 12px;
     right: calc(var(--sidebar-width) + 14px);
@@ -29,12 +33,15 @@
   .title-main { font-size: 1.75rem; font-weight: 300; letter-spacing: -0.5px; }
   .title-sub  { font-size: 1.75rem; font-weight: 700; }
 
+  
   #canvas {
     position: fixed; top: 0; left: 0;
     width: calc(100% - var(--sidebar-width));
-    height: 100vh; overflow: hidden; background: #fff;
+    height: 100vh; height: 100dvh;
+    overflow: hidden; background: #fff;
   }
 
+  
   .instance {
     position: absolute; display: flex; align-items: center;
     background: var(--instance-bg);
@@ -42,7 +49,7 @@
     padding: 0 18px; height: 78px;
     white-space: nowrap; cursor: grab; z-index: 11;
     animation: scaleIn 0.2s cubic-bezier(0.34,1.56,0.64,1);
-    will-change: transform;
+    will-change: transform; touch-action: none;
   }
   @keyframes scaleIn {
     from { transform: scale(0.4); opacity: 0; }
@@ -55,9 +62,10 @@
   .instance-emoji { font-size: 38px; margin-right: 10px; pointer-events: none; }
   .instance-text  { font-size: 34px; pointer-events: none; font-weight: 400; }
 
+  
   #sidebar {
     position: fixed; top: 0; right: 0;
-    width: var(--sidebar-width); height: 100vh;
+    width: var(--sidebar-width); height: 100vh; height: 100dvh;
     border-left: 1px solid var(--border); background: #fff;
     display: flex; flex-direction: column; z-index: 10; overflow: hidden;
   }
@@ -72,6 +80,7 @@
     background: #fff; border: 1px solid var(--border); border-radius: 5px;
     padding: 5px 10px; margin: 4px; font-size: 13.5px;
     cursor: grab; white-space: nowrap; transition: background 0.1s;
+    touch-action: none;
   }
   .sidebar-item:hover {
     background: linear-gradient(0deg, #f0feff, #fff 80%);
@@ -105,6 +114,7 @@
   }
   .search-input::placeholder { color: #aaa; }
 
+  
   .bottom-controls {
     position: fixed; bottom: 10px; right: calc(var(--sidebar-width) + 14px);
     display: flex; gap: 18px; align-items: center; z-index: 5; opacity: 0.7;
@@ -119,6 +129,7 @@
     font-size: 12px; color: #aaa; z-index: 5; pointer-events: none;
   }
 
+  
   .result-toast {
     position: fixed; bottom: 28px; left: 50%;
     transform: translateX(calc(-50% - var(--sidebar-width)/2)) scale(0);
@@ -135,6 +146,7 @@
   .first-disc      { font-size: 0.7rem; color: #888; margin-top: 3px; }
   .first-disc span { background: #fffbe6; border: 1px solid #ffe066; border-radius: 4px; padding: 1px 6px; }
 
+  
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.35);
     display: flex; align-items: center; justify-content: center; z-index: 300;
@@ -148,7 +160,7 @@
   .modal p  { font-size: 13px; color: #666; margin-bottom: 16px; line-height: 1.5; }
   .modal input {
     width: 100%; border: 1px solid var(--border); border-radius: 6px;
-    padding: 8px 12px; font-size: 14px; font-family: 'Roboto', sans-serif;
+    padding: 8px 12px; font-size: 16px; font-family: 'Roboto', sans-serif;
     outline: none; margin-bottom: 12px;
   }
   .modal input:focus { border-color: var(--item-border); }
@@ -161,6 +173,7 @@
   .modal-skip { font-size: 12px; color: #aaa; margin-top: 10px; cursor: pointer; }
   .modal-skip:hover { color: #555; }
 
+  
   .ghost {
     position: fixed; display: flex; align-items: center;
     background: var(--instance-bg-hover); border: 2px solid var(--item-border);
@@ -169,6 +182,96 @@
   }
   .ghost-emoji { font-size: 38px; margin-right: 10px; }
   .ghost-text  { font-size: 34px; font-weight: 400; }
+
+  
+  .delete-hint {
+    position: fixed; bottom: 10px; left: 50%;
+    transform: translateX(calc(-50% - var(--sidebar-width)/2));
+    font-size: 11px; color: #bbb; pointer-events: none; z-index: 4;
+  }
+
+  
+  @media (max-width: 640px) {
+    :root { --drawer-height: 42vh; }
+
+    
+    .title {
+      right: auto; left: 12px; top: 8px; text-align: left;
+    }
+    .title-main { font-size: 1.1rem; }
+    .title-sub  { font-size: 1.1rem; }
+
+    
+    #canvas {
+      width: 100%;
+      height: calc(100dvh - var(--drawer-height));
+    }
+
+    
+    .instance { height: 52px; padding: 0 10px; border-radius: 8px; }
+    .instance-emoji { font-size: 22px; margin-right: 6px; }
+    .instance-text  { font-size: 18px; }
+
+    
+    .ghost { height: 52px; padding: 0 10px; border-radius: 8px; }
+    .ghost-emoji { font-size: 22px; margin-right: 6px; }
+    .ghost-text  { font-size: 18px; }
+
+    
+    #sidebar {
+      top: auto; right: 0; bottom: 0; left: 0;
+      width: 100%; height: var(--drawer-height);
+      border-left: none; border-top: 1px solid var(--border);
+      border-radius: 14px 14px 0 0;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.07);
+    }
+
+    
+    #sidebar::before {
+      content: '';
+      display: block; flex-shrink: 0;
+      width: 36px; height: 4px; border-radius: 2px;
+      background: #ddd;
+      margin: 8px auto 4px;
+    }
+
+    
+    .items-wrap {
+      flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden;
+      padding: 6px 8px; align-content: center;
+    }
+    .items-wrap::-webkit-scrollbar { height: 3px; width: 0; }
+    .items-wrap::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+
+    .sidebar-item { font-size: 12px; padding: 4px 8px; margin: 3px; flex-shrink: 0; }
+
+    
+    .bottom-controls {
+      right: 10px;
+      bottom: calc(var(--drawer-height) + 6px);
+    }
+    .item-count {
+      left: 10px;
+      bottom: calc(var(--drawer-height) + 8px);
+    }
+    .delete-hint {
+      transform: translateX(-50%);
+      bottom: calc(var(--drawer-height) + 8px);
+      font-size: 10px;
+    }
+
+    
+    .result-toast {
+      transform: translateX(-50%) scale(0);
+      bottom: calc(var(--drawer-height) + 14px);
+      max-width: 90vw; white-space: normal; text-align: center;
+    }
+    .result-toast.show { transform: translateX(-50%) scale(1); }
+
+    
+    .sort-tab { font-size: 11px; height: 26px; }
+    .search-input { height: 34px; font-size: 13px; }
+  }
 </style>
 </head>
 <body>
@@ -202,6 +305,7 @@
   <div class="first-disc" id="rFirst" style="display:none"></div>
 </div>
 <div class="item-count" id="itemCount">4 elements</div>
+<div class="delete-hint" id="deleteHint">right-click or drag to sidebar to delete &nbsp;·&nbsp; double-click to duplicate</div>
 
 <div class="bottom-controls">
   <button class="ctrl-btn" id="soundBtn">🔊</button>
@@ -221,7 +325,6 @@
 
 <script>
 
-// ─── Storage helpers ───────────────────────────────────────────────────────────
 const STORAGE_KEY_DISC = 'jcraft_discovered';
 const STORAGE_KEY_USER = 'jcraft_username';
 
@@ -241,7 +344,6 @@ function loadDiscovered() {
   return null;
 }
 
-// ─── Item name / emoji helpers ─────────────────────────────────────────────────
 function getName(s) {
   return s.replace(/^[^A-Za-z0-9]+/, '').trim();
 }
@@ -250,7 +352,6 @@ function getEmoji(s) {
   return s.slice(0, s.length - name.length).trim() || '✨';
 }
 
-// ─── Combo table ───────────────────────────────────────────────────────────────
 const RAW = [
   ["💧Water","💧Water","🌊Ocean"],
   ["🔥Fire","🔥Fire","🌋Volcano"],
@@ -1104,7 +1205,6 @@ const STARTERS = [
   { emoji:'🌍', name:'Earth' },
 ];
 
-// ─── Load saved discoveries or fall back to starters ──────────────────────────
 const saved = loadDiscovered();
 let discovered = saved && saved.length >= 4
   ? saved
@@ -1159,7 +1259,6 @@ function playSound(t){
   }catch(e){}
 }
 
-// ─── Username modal ────────────────────────────────────────────────────────────
 const savedUser = localStorage.getItem(STORAGE_KEY_USER);
 if (savedUser) {
   username = savedUser;
@@ -1178,7 +1277,6 @@ document.getElementById('usernameInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('modalConfirm').click();
 });
 
-// ─── Sidebar rendering ─────────────────────────────────────────────────────────
 function renderSidebar(){
   let items=[...discovered];
   if(sortMode==='time') items.sort((a,b)=>b.time-a.time);
@@ -1223,41 +1321,110 @@ document.getElementById('soundBtn').onclick=()=>{
 };
 document.getElementById('clearBtn').onclick=()=>{canvasEls.forEach(e=>e.remove());canvasEls=[];};
 
-// ─── Ghost drag helper ─────────────────────────────────────────────────────────
+function isMobile(){ return window.innerWidth <= 640; }
+
 function createGhost(data,cx,cy){
+  const mob=isMobile();
   const g=document.createElement('div');
   g.className='ghost';
   g.innerHTML=`<span class="ghost-emoji">${data.emoji}</span><span class="ghost-text">${data.name}</span>`;
-  g.style.left=(cx-30)+'px';g.style.top=(cy-39)+'px';
+  if(mob){ g.style.fontSize='18px'; }
+  g.style.left=(cx-(mob?16:30))+'px';
+  g.style.top=(cy-(mob?26:39))+'px';
   document.body.appendChild(g);return g;
 }
 function moveGhost(cx,cy){
-  if(sidebarGhost){sidebarGhost.style.left=(cx-30)+'px';sidebarGhost.style.top=(cy-39)+'px';}
+  const mob=isMobile();
+  if(sidebarGhost){
+    sidebarGhost.style.left=(cx-(mob?16:30))+'px';
+    sidebarGhost.style.top=(cy-(mob?26:39))+'px';
+  }
 }
 
-// ─── Sidebar drag ──────────────────────────────────────────────────────────────
+function deleteInstance(el){
+  el.style.transition='transform 0.15s, opacity 0.15s';
+  el.style.transform='scale(0)';
+  el.style.opacity='0';
+  setTimeout(()=>{
+    el.remove();
+    canvasEls=canvasEls.filter(e=>e!==el);
+  },150);
+}
+
+function spawnInstance(data,x,y){
+  if(x===undefined){
+    const mob  = isMobile();
+    const pad  = mob ? 20  : 60;
+    const chipW = mob ? 100 : 260;
+    const chipH = mob ? 52  : 78;
+    x = pad + Math.random() * Math.max(10, canvas.clientWidth  - chipW - pad);
+    y = pad + Math.random() * Math.max(10, canvas.clientHeight - chipH - pad * 2);
+  }
+  const el=document.createElement('div');
+  el.className='instance';
+  el.style.left=x+'px';el.style.top=y+'px';
+  el.innerHTML=`<span class="instance-emoji">${data.emoji}</span><span class="instance-text">${data.name}</span>`;
+  el._data=data;
+  el._clickTime=0;
+
+  
+  el.addEventListener('contextmenu',e=>{
+    e.preventDefault();
+    deleteInstance(el);
+  });
+
+  
+  el.addEventListener('dblclick',e=>{
+    e.preventDefault();
+    spawnInstance(data, parseFloat(el.style.left)+30, parseFloat(el.style.top)+30);
+  });
+
+  el.addEventListener('mousedown',onMouseDown);
+  el.addEventListener('touchstart',onTouchStart,{passive:false});
+  canvas.appendChild(el);canvasEls.push(el);
+  return el;
+}
+
 function onSidebarMouseDown(e,data){
-  e.preventDefault();draggingFromSidebar=data;
+  e.preventDefault();
+  _sidebarDragStartX=e.clientX; _sidebarDragStartY=e.clientY;
+  draggingFromSidebar=data;
   e.currentTarget.classList.add('dragging-from-sidebar');
-  sidebarGhost=createGhost(data,e.clientX,e.clientY);playSound('pickup');
+  sidebarGhost=createGhost(data,e.clientX,e.clientY);
+  playSound('pickup');
   window.addEventListener('mousemove',onSidebarMouseMove);
   window.addEventListener('mouseup',onSidebarMouseUp);
 }
 function onSidebarMouseMove(e){moveGhost(e.clientX,e.clientY);}
+let _sidebarDragStartX=0, _sidebarDragStartY=0;
+
 function onSidebarMouseUp(e){
   window.removeEventListener('mousemove',onSidebarMouseMove);
   window.removeEventListener('mouseup',onSidebarMouseUp);
+  const dx=e.clientX-_sidebarDragStartX, dy=e.clientY-_sidebarDragStartY;
+  const wasDrag=Math.sqrt(dx*dx+dy*dy)>8;
   if(sidebarGhost){sidebarGhost.remove();sidebarGhost=null;}
   document.querySelectorAll('.dragging-from-sidebar').forEach(el=>el.classList.remove('dragging-from-sidebar'));
   const r=canvas.getBoundingClientRect();
-  if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom)
-    spawnInstance(draggingFromSidebar,e.clientX-r.left-30,e.clientY-r.top-39);
+  if(!wasDrag){
+    
+    spawnInstance(draggingFromSidebar);
+    playSound('pickup');
+  } else if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom){
+    const mob=isMobile();
+    spawnInstance(draggingFromSidebar,e.clientX-r.left-(mob?16:30),e.clientY-r.top-(mob?26:39));
+  }
   draggingFromSidebar=null;
 }
+
 function onSidebarTouchStart(e,data){
-  e.preventDefault();draggingFromSidebar=data;
+  e.preventDefault();
+  const t=e.touches[0];
+  _sidebarDragStartX=t.clientX; _sidebarDragStartY=t.clientY;
+  draggingFromSidebar=data;
   e.currentTarget.classList.add('dragging-from-sidebar');
-  const t=e.touches[0];sidebarGhost=createGhost(data,t.clientX,t.clientY);playSound('pickup');
+  sidebarGhost=createGhost(data,t.clientX,t.clientY);
+  playSound('pickup');
   window.addEventListener('touchmove',onSidebarTouchMove,{passive:false});
   window.addEventListener('touchend',onSidebarTouchEnd);
 }
@@ -1265,41 +1432,72 @@ function onSidebarTouchMove(e){e.preventDefault();moveGhost(e.touches[0].clientX
 function onSidebarTouchEnd(e){
   window.removeEventListener('touchmove',onSidebarTouchMove);
   window.removeEventListener('touchend',onSidebarTouchEnd);
+  const t=e.changedTouches[0];
+  const dx=t.clientX-_sidebarDragStartX, dy=t.clientY-_sidebarDragStartY;
+  const wasDrag=Math.sqrt(dx*dx+dy*dy)>8;
   if(sidebarGhost){sidebarGhost.remove();sidebarGhost=null;}
   document.querySelectorAll('.dragging-from-sidebar').forEach(el=>el.classList.remove('dragging-from-sidebar'));
-  const t=e.changedTouches[0];const r=canvas.getBoundingClientRect();
-  if(t.clientX>=r.left&&t.clientX<=r.right&&t.clientY>=r.top&&t.clientY<=r.bottom)
-    spawnInstance(draggingFromSidebar,t.clientX-r.left-30,t.clientY-r.top-39);
+  const r=canvas.getBoundingClientRect();
+  if(!wasDrag){
+    spawnInstance(draggingFromSidebar);
+    playSound('pickup');
+  } else if(t.clientX>=r.left&&t.clientX<=r.right&&t.clientY>=r.top&&t.clientY<=r.bottom){
+    const mob=isMobile();
+    spawnInstance(draggingFromSidebar,t.clientX-r.left-(mob?16:30),t.clientY-r.top-(mob?26:39));
+  }
   draggingFromSidebar=null;
 }
 
-// ─── Canvas instances ──────────────────────────────────────────────────────────
-function spawnInstance(data,x,y){
-  if(x===undefined){
-    x=60+Math.random()*(canvas.clientWidth-260);
-    y=60+Math.random()*(canvas.clientHeight-140);
-  }
-  const el=document.createElement('div');
-  el.className='instance';
-  el.style.left=x+'px';el.style.top=y+'px';
-  el.innerHTML=`<span class="instance-emoji">${data.emoji}</span><span class="instance-text">${data.name}</span>`;
-  el._data=data;
-  el.addEventListener('mousedown',onMouseDown);
-  el.addEventListener('touchstart',onTouchStart,{passive:false});
-  canvas.appendChild(el);canvasEls.push(el);
-  return el;
+let dragMoved=false;
+
+function onMouseDown(e){
+  e.preventDefault();
+  dragMoved=false;
+  playSound('pickup');
+  startDrag(e.currentTarget,e.clientX,e.clientY);
+  window.addEventListener('mousemove',onMouseMove);
+  window.addEventListener('mouseup',onMouseUp);
+}
+function onMouseMove(e){
+  if(dragging){ dragMoved=true; moveDrag(e.clientX,e.clientY); }
+}
+function onMouseUp(e){
+  window.removeEventListener('mousemove',onMouseMove);
+  window.removeEventListener('mouseup',onMouseUp);
+  endDrag();
 }
 
-// ─── Canvas drag ───────────────────────────────────────────────────────────────
-function onMouseDown(e){e.preventDefault();playSound('pickup');startDrag(e.currentTarget,e.clientX,e.clientY);window.addEventListener('mousemove',onMouseMove);window.addEventListener('mouseup',onMouseUp);}
-function onMouseMove(e){if(dragging)moveDrag(e.clientX,e.clientY);}
-function onMouseUp(){endDrag();window.removeEventListener('mousemove',onMouseMove);window.removeEventListener('mouseup',onMouseUp);}
-function onTouchStart(e){e.preventDefault();playSound('pickup');startDrag(e.currentTarget,e.touches[0].clientX,e.touches[0].clientY);window.addEventListener('touchmove',onTouchMove,{passive:false});window.addEventListener('touchend',onTouchEnd);}
-function onTouchMove(e){e.preventDefault();if(dragging)moveDrag(e.touches[0].clientX,e.touches[0].clientY);}
-function onTouchEnd(){endDrag();window.removeEventListener('touchmove',onTouchMove);window.removeEventListener('touchend',onTouchEnd);}
+function onTouchStart(e){
+  e.preventDefault();
+  dragMoved=false;
+  playSound('pickup');
+  startDrag(e.currentTarget,e.touches[0].clientX,e.touches[0].clientY);
+  window.addEventListener('touchmove',onTouchMove,{passive:false});
+  window.addEventListener('touchend',onTouchEnd);
+}
+function onTouchMove(e){
+  e.preventDefault();
+  if(dragging){ dragMoved=true; moveDrag(e.touches[0].clientX,e.touches[0].clientY); }
+}
+function onTouchEnd(e){
+  window.removeEventListener('touchmove',onTouchMove);
+  window.removeEventListener('touchend',onTouchEnd);
+  
+  if(dragging && isMobile()){
+    const t=e.changedTouches[0];
+    const r=canvas.getBoundingClientRect();
+    if(t.clientY>r.bottom){
+      deleteInstance(dragging);
+      dragging=null;
+      return;
+    }
+  }
+  endDrag();
+}
 
 function startDrag(el,cx,cy){
-  dragging=el;const r=el.getBoundingClientRect();
+  dragging=el;
+  const r=el.getBoundingClientRect();
   dragOffX=cx-r.left;dragOffY=cy-r.top;
   el.style.zIndex=50;el.style.transition='none';el.classList.add('selected');
 }
@@ -1313,7 +1511,16 @@ function endDrag(){
   const el=dragging;
   el.style.zIndex=11;el.style.transition='';el.classList.remove('selected');
   dragging=null;
+
+  
+  const sb=document.getElementById('sidebar').getBoundingClientRect();
   const dr=el.getBoundingClientRect();
+  const overSidebar=dr.right>sb.left&&dr.left<sb.right&&dr.bottom>sb.top&&dr.top<sb.bottom;
+  if(overSidebar && !isMobile()){
+    deleteInstance(el);
+    return;
+  }
+
   for(const other of canvasEls){
     if(other===el)continue;
     const or=other.getBoundingClientRect();
@@ -1323,7 +1530,6 @@ function endDrag(){
   }
 }
 
-// ─── Combine logic ─────────────────────────────────────────────────────────────
 function combine(a, b){
   const d1=a._data, d2=b._data;
   const defined = lookupCombo(d1.name, d2.name);
@@ -1342,7 +1548,7 @@ function combine(a, b){
   const isNew = !discovered.find(e => e.name === result.name);
   if(isNew){
     discovered.push({...result, id:nextId++, time:Date.now()});
-    saveDiscovered();   // ← persist to localStorage
+    saveDiscovered();   
     renderSidebar();
     playSound('discovery');
   }
@@ -1369,14 +1575,25 @@ function combine(a, b){
   spawnInstance(result, mx, my);
 }
 
-// ─── Init ──────────────────────────────────────────────────────────────────────
 renderSidebar();
 setTimeout(() => {
+  const mob = isMobile();
   const cx = canvas.clientWidth / 2, cy = canvas.clientHeight / 2;
-  spawnInstance(STARTERS[0], cx-320, cy-39);
-  spawnInstance(STARTERS[1], cx-100, cy-39);
-  spawnInstance(STARTERS[2], cx+120, cy-39);
-  spawnInstance(STARTERS[3], cx-210, cy+80);
+  if(mob){
+    
+    const chipW=110, chipH=52, gap=14;
+    const startX = cx - chipW - gap/2;
+    const startY = Math.max(10, cy/2 - chipH);
+    spawnInstance(STARTERS[0], startX,           startY);
+    spawnInstance(STARTERS[1], startX+chipW+gap, startY);
+    spawnInstance(STARTERS[2], startX,           startY+chipH+gap);
+    spawnInstance(STARTERS[3], startX+chipW+gap, startY+chipH+gap);
+  } else {
+    spawnInstance(STARTERS[0], cx-320, cy-39);
+    spawnInstance(STARTERS[1], cx-100, cy-39);
+    spawnInstance(STARTERS[2], cx+120, cy-39);
+    spawnInstance(STARTERS[3], cx-210, cy+80);
+  }
 }, 50);
 </script>
 </body>
