@@ -1,10 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jackfinite Craft</title>
-
+ <link rel="icon"https://www.freepnglogos.com/uploads/infinity-symbol-png/infinity-symbol-infinity-svg-png-icon-download-17.png" type="image/png">
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -24,7 +25,6 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  
   .title {
     position: fixed; top: 12px;
     right: calc(var(--sidebar-width) + 14px);
@@ -33,7 +33,6 @@
   .title-main { font-size: 1.75rem; font-weight: 300; letter-spacing: -0.5px; }
   .title-sub  { font-size: 1.75rem; font-weight: 700; }
 
-  
   #canvas {
     position: fixed; top: 0; left: 0;
     width: calc(100% - var(--sidebar-width));
@@ -41,7 +40,6 @@
     overflow: hidden; background: #fff;
   }
 
-  
   .instance {
     position: absolute; display: flex; align-items: center;
     background: var(--instance-bg);
@@ -62,7 +60,6 @@
   .instance-emoji { font-size: 38px; margin-right: 10px; pointer-events: none; }
   .instance-text  { font-size: 34px; pointer-events: none; font-weight: 400; }
 
-  
   #sidebar {
     position: fixed; top: 0; right: 0;
     width: var(--sidebar-width); height: 100vh; height: 100dvh;
@@ -114,7 +111,6 @@
   }
   .search-input::placeholder { color: #aaa; }
 
-  
   .bottom-controls {
     position: fixed; bottom: 10px; right: calc(var(--sidebar-width) + 14px);
     display: flex; gap: 18px; align-items: center; z-index: 5; opacity: 0.7;
@@ -129,7 +125,6 @@
     font-size: 12px; color: #aaa; z-index: 5; pointer-events: none;
   }
 
-  
   .result-toast {
     position: fixed; bottom: 28px; left: 50%;
     transform: translateX(calc(-50% - var(--sidebar-width)/2)) scale(0);
@@ -146,7 +141,6 @@
   .first-disc      { font-size: 0.7rem; color: #888; margin-top: 3px; }
   .first-disc span { background: #fffbe6; border: 1px solid #ffe066; border-radius: 4px; padding: 1px 6px; }
 
-  
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.35);
     display: flex; align-items: center; justify-content: center; z-index: 300;
@@ -173,7 +167,6 @@
   .modal-skip { font-size: 12px; color: #aaa; margin-top: 10px; cursor: pointer; }
   .modal-skip:hover { color: #555; }
 
-  
   .ghost {
     position: fixed; display: flex; align-items: center;
     background: var(--instance-bg-hover); border: 2px solid var(--item-border);
@@ -183,41 +176,34 @@
   .ghost-emoji { font-size: 38px; margin-right: 10px; }
   .ghost-text  { font-size: 34px; font-weight: 400; }
 
-  
   .delete-hint {
     position: fixed; bottom: 10px; left: 50%;
     transform: translateX(calc(-50% - var(--sidebar-width)/2));
     font-size: 11px; color: #bbb; pointer-events: none; z-index: 4;
   }
 
-  
   @media (max-width: 640px) {
     :root { --drawer-height: 42vh; }
 
-    
     .title {
       right: auto; left: 12px; top: 8px; text-align: left;
     }
     .title-main { font-size: 1.1rem; }
     .title-sub  { font-size: 1.1rem; }
 
-    
     #canvas {
       width: 100%;
       height: calc(100dvh - var(--drawer-height));
     }
 
-    
     .instance { height: 52px; padding: 0 10px; border-radius: 8px; }
     .instance-emoji { font-size: 22px; margin-right: 6px; }
     .instance-text  { font-size: 18px; }
 
-    
     .ghost { height: 52px; padding: 0 10px; border-radius: 8px; }
     .ghost-emoji { font-size: 22px; margin-right: 6px; }
     .ghost-text  { font-size: 18px; }
 
-    
     #sidebar {
       top: auto; right: 0; bottom: 0; left: 0;
       width: 100%; height: var(--drawer-height);
@@ -226,7 +212,6 @@
       box-shadow: 0 -4px 16px rgba(0,0,0,0.07);
     }
 
-    
     #sidebar::before {
       content: '';
       display: block; flex-shrink: 0;
@@ -235,7 +220,6 @@
       margin: 8px auto 4px;
     }
 
-    
     .items-wrap {
       flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden;
       padding: 6px 8px; align-content: center;
@@ -245,7 +229,6 @@
 
     .sidebar-item { font-size: 12px; padding: 4px 8px; margin: 3px; flex-shrink: 0; }
 
-    
     .bottom-controls {
       right: 10px;
       bottom: calc(var(--drawer-height) + 6px);
@@ -260,7 +243,6 @@
       font-size: 10px;
     }
 
-    
     .result-toast {
       transform: translateX(-50%) scale(0);
       bottom: calc(var(--drawer-height) + 14px);
@@ -268,7 +250,6 @@
     }
     .result-toast.show { transform: translateX(-50%) scale(1); }
 
-    
     .sort-tab { font-size: 11px; height: 26px; }
     .search-input { height: 34px; font-size: 13px; }
   }
@@ -358,8 +339,8 @@ const RAW = [
   ["🌬️Wind","🌬️Wind","🌪️Tornado"],
   ["🌍Earth","🌍Earth","⛰️Mountain"],
   ["💧Water","🔥Fire","♨️Steam"],
-  ["💧Water","🌬️Wind","🌊Wave"],
-  ["💧Water","🌍Earth","🌱Plant"],
+  ["💧Water","🌬️Wind","🌫️Mist"],
+  ["💧Water","🌍Earth","🌱Life"],
   ["🔥Fire","🌬️Wind","🔥Wildfire"],
   ["🔥Fire","🌍Earth","🌋Lava"],
   ["🌬️Wind","🌍Earth","🌪️Dust Storm"],
@@ -372,100 +353,220 @@ const RAW = [
   ["🌊Ocean","🌱Plant","🌿Seaweed"],
   ["🌊Wave","🌬️Wind","🌊Ocean"],
   ["🌊Wave","🌍Earth","🏖️Beach"],
+  ["🌊Wave","🌊Wave","🌊Tsunami"],
+  ["🌊Wave","🔥Fire","🌊Steamy Wave"],
+  ["🌊Wave","🌱Plant","🌿Seaweed"],
   ["🏖️Beach","🔥Fire","🏜️Desert"],
   ["🏖️Beach","🌬️Wind","🏝️Island"],
-  ["🏝️Island","🌬️Wind","🌴Palm Tree"],
+  ["🏖️Beach","🏖️Beach","🏝️Paradise"],
+  ["🏖️Beach","💧Water","🌊Shoreline"],
+  ["🏖️Beach","🌱Plant","🌴Coastal Path"],
+  ["🏝️Island","🌬️Wind","🌴Windy Isle"],
   ["🏝️Island","🔥Fire","🌋Volcanic Island"],
-  ["🌋Lava","💧Water","🪨Stone"],
+  ["🏝️Island","🏝️Island","🌍Archipelago"],
+  ["🏝️Island","🌱Plant","🌴Tropical Island"],
+  ["🌋Lava","💧Water","🪨Obsidian"],
   ["🌋Lava","🌬️Wind","🌋Lava Flow"],
   ["🌋Lava","🌍Earth","🌋Volcano"],
   ["🌋Lava","🌋Lava","🌋Super Volcano"],
   ["🌋Lava","🌱Plant","🌋Scorched Earth"],
+  ["🌋Lava","☁️Cloud","🌫️Volcanic Fog"],
+  ["🌋Lava","🪨Stone","🪨Basalt"],
   ["🌋Volcano","💧Water","🌫️Steam Cloud"],
   ["🌋Volcano","🌍Earth","🏔️Crater"],
+  ["🌋Volcano","🌋Volcano","🌏Ring of Fire"],
+  ["🌋Volcano","🌬️Wind","🌋Ash Cloud"],
+  ["🌋Volcano","🌱Plant","🌋Volcanic Soil"],
   ["⛰️Mountain","💧Water","💧Waterfall"],
   ["⛰️Mountain","🌬️Wind","❄️Snow"],
   ["⛰️Mountain","🔥Fire","🌋Volcano"],
+  ["⛰️Mountain","⛰️Mountain","🏔️Mountain Range"],
+  ["⛰️Mountain","🌱Plant","🌿Highland"],
+  ["⛰️Mountain","🌍Earth","🏔️Cliff"],
+  ["⛰️Mountain","🌞Sun","⛰️Sunlit Peak"],
   ["🪨Stone","🪨Stone","🏔️Boulder"],
   ["🪨Stone","💧Water","🏖️Sand"],
   ["🪨Stone","🔥Fire","🪨Flint"],
   ["🪨Stone","🌬️Wind","🏜️Eroded Rock"],
   ["🪨Stone","🌍Earth","⛰️Mountain"],
   ["🪨Stone","🌱Plant","🌿Mossy Stone"],
+  ["🪨Stone","⚡Lightning","🪨Fulgurite"],
+  ["🪨Stone","🌧️Rain","🪨Wet Stone"],
   ["🏖️Sand","🔥Fire","🪟Glass"],
-  ["🏖️Sand","💧Water","🏖️Beach"],
+  ["🏖️Sand","💧Water","🪨Mud"],
   ["🏖️Sand","🌬️Wind","🌪️Sandstorm"],
-  ["❄️Snow","❄️Snow","🧊Ice"],
+  ["🏖️Sand","🌍Earth","🏖️Sandy Soil"],
+  ["🏖️Sand","🏖️Sand","🏜️Desert"],
+  ["🏖️Sand","🌞Sun","🏜️Hot Desert"],
+  ["❄️Snow","❄️Snow","🧊Ice Sheet"],
   ["❄️Snow","🔥Fire","💧Water"],
   ["❄️Snow","🌬️Wind","❄️Blizzard"],
+  ["❄️Snow","🌍Earth","🏔️Snowfield"],
+  ["❄️Snow","🌱Plant","❄️Frozen Plant"],
   ["🧊Ice","🔥Fire","💧Water"],
   ["🧊Ice","💧Water","🌊Glacier"],
   ["🧊Ice","🌬️Wind","❄️Blizzard"],
-  ["💧Water","🧊Ice","🌊Glacier"],
+  ["🧊Ice","🌍Earth","🏔️Glacier"],
+  ["🧊Ice","🌱Plant","❄️Frozen Plant"],
+  ["🧊Ice","🧊Ice","❄️Ice Sheet"],
+  ["❄️Blizzard","❄️Blizzard","🌨️Whiteout"],
+  ["❄️Blizzard","🏠House","🏠Snow Covered House"],
+  ["❄️Blizzard","🌍Earth","❄️Tundra"],
   ["🌪️Dust Storm","💧Water","🌧️Rain"],
+  ["🌪️Dust Storm","🌬️Wind","🌪️Mega Dust Storm"],
+  ["🌪️Dust Storm","🌍Earth","🏜️Dust Bowl"],
+  ["🌪️Dust Storm","☁️Cloud","🌧️Dust Rain"],
+  ["🌪️Dust Storm","🔥Fire","💥Firestorm"],
   ["🌪️Tornado","🌍Earth","🌪️Dust Devil"],
   ["🌪️Tornado","💧Water","🌀Hurricane"],
   ["🌪️Tornado","🏠House","🌪️Blown Roof"],
   ["♨️Steam","🌬️Wind","☁️Cloud"],
   ["♨️Steam","💧Water","☁️Condensation"],
   ["♨️Steam","🔥Fire","💥Explosion"],
-  ["♨️Steam","🌍Earth","🌋Geothermal"],
+  ["♨️Steam","🌍Earth","🌋Geyser"],
+  ["♨️Steam","♨️Steam","☁️Steam Cloud"],
+  ["♨️Steam","🌱Plant","🌿Steamed Plant"],
+  ["♨️Steam","☁️Cloud","🌧️Rain"],
   ["☁️Cloud","☁️Cloud","🌧️Heavy Rain"],
   ["☁️Cloud","💧Water","🌧️Rain"],
   ["☁️Cloud","🔥Fire","⚡Lightning"],
   ["☁️Cloud","🌬️Wind","⛈️Storm"],
   ["☁️Cloud","🌍Earth","🌧️Rain"],
+  ["☁️Cloud","⛰️Mountain","🌫️Mountain Cloud"],
+  ["☁️Cloud","🌞Sun","⛅Partly Cloudy"],
+  ["☁️Cloud","🌧️Rain","⛈️Storm Cloud"],
   ["⚡Lightning","💧Water","⚡Electrocution"],
   ["⚡Lightning","🌍Earth","🔋Energy"],
   ["⚡Lightning","🪨Stone","🪨Fulgurite"],
+  ["⚡Lightning","🌳Tree","🌳Struck Tree"],
+  ["⚡Lightning","⛰️Mountain","⛰️Thunder Peak"],
+  ["⚡Lightning","🌱Plant","🌾Scorched Plant"],
+  ["⚡Lightning","⚡Lightning","⚡Lightning Storm"],
   ["🌧️Rain","🌍Earth","🌱Plant"],
   ["🌧️Rain","🌬️Wind","🌧️Storm"],
   ["🌧️Rain","🔥Fire","💨Steam Puff"],
   ["🌧️Rain","☁️Cloud","🌧️Heavy Rain"],
+  ["🌧️Rain","🌧️Rain","🌊Flood"],
+  ["🌧️Rain","⛰️Mountain","💧Mountain Stream"],
+  ["🌧️Rain","🏖️Sand","🏖️Wet Beach"],
+  ["🌧️Rain","🌊Ocean","🌊Rising Sea"],
+  ["🌫️Mist","💧Water","🌧️Drizzle"],
+  ["🌫️Mist","🔥Fire","💨Light Steam"],
+  ["🌫️Mist","🌬️Wind","🌫️Drifting Mist"],
+  ["🌫️Mist","🌫️Mist","🌫️Dense Fog"],
+  ["🌫️Mist","🌍Earth","🍄Mushroom"],
+  ["🌫️Fog","💧Water","🌫️Dense Fog"],
+  ["🌫️Fog","🔥Fire","💨Steam"],
+  ["🌫️Fog","🌬️Wind","🌫️Clearing Fog"],
+  ["🌫️Fog","🌞Sun","🌤️Clearing Sky"],
+  ["🌫️Fog","🌍Earth","🌫️Ground Fog"],
+  ["💨Smoke","☁️Cloud","🌫️Fog"],
+  ["💨Smoke","💨Smoke","🌫️Smog"],
+  ["💨Smoke","💧Water","🌧️Acid Rain"],
+  ["💨Smoke","🌬️Wind","💨Dispersing Smoke"],
+  ["💨Smoke","🌍Earth","🌫️Dusty Air"],
+  ["💨Smoke","🌞Sun","🌤️Hazy Sky"],
+  ["🌱Life","🌍Earth","👤Human"],
   ["🌱Plant","🌱Plant","🌿Bush"],
   ["🌱Plant","💧Water","🥬Vegetation"],
   ["🌱Plant","🌬️Wind","🌳Tree"],
   ["🌱Plant","🔥Fire","🌾Ash"],
   ["🌱Plant","🌍Earth","🌱Soil"],
   ["🌱Plant","🏖️Sand","🌵Cactus"],
+  ["🌱Plant","⏳Time","🌱Seed"],
+  ["🌱Soil","💧Water","🪨Mud"],
+  ["🌱Seed","🔥Fire","🌾Ash"],
+  ["🌱Seed","☁️Cloud","🌧️Watered Seed"],
+  ["🌱Seed","🌬️Wind","🌾Scattered Seeds"],
+  ["🌱Seed","🌱Seed","🌿Garden"],
   ["🌵Cactus","💧Water","🌺Flower"],
+  ["🌵Cactus","🌵Cactus","🏜️Cactus Field"],
+  ["🌵Cactus","🔥Fire","🏜️Burning Cactus"],
+  ["🌵Cactus","🌍Earth","🏜️Desert"],
+  ["🌵Cactus","🌬️Wind","🌵Swaying Cactus"],
+  ["🌵Cactus","🪨Stone","🪨Rocky Desert"],
   ["🌺Flower","🌬️Wind","🐝Bee"],
   ["🌺Flower","☀️Sun","🌻Sunflower"],
   ["🌺Flower","💧Water","🌷Rose"],
+  ["🌺Flower","🌺Flower","💐Bouquet"],
+  ["🌺Flower","🔥Fire","🌸Wilted Flower"],
+  ["🌺Flower","🌧️Rain","🌸Blooming Flower"],
+  ["🌺Flower","🌍Earth","🌷Garden"],
+  ["🌺Flower","🎨Art","🎨Pink"],
+  ["🌹Rose","🎨Art","🎨Pink"],
   ["🐝Bee","🌺Flower","🍯Honey"],
-  ["🥬Vegetation","🌍Earth","🌾Field"],
+  ["🐝Bee","🐝Bee","🍯Beehive"],
+  ["🐝Bee","🔥Fire","💨Smoke Screen"],
+  ["🐝Bee","🌍Earth","🐝Beehive"],
+  ["🐝Bee","💧Water","🐝Wet Bee"],
+  ["🌿Bush","💧Water","🌳Tree"],
+  ["🌿Bush","🔥Fire","🌾Ash"],
+  ["🌿Bush","🌿Bush","🌲Hedge"],
+  ["🌿Bush","🌬️Wind","🍃Rustling Bush"],
+  ["🌿Bush","🌺Flower","🌸Flower Bush"],
   ["🌳Tree","🌳Tree","🌲Forest"],
-  ["🌳Tree","🌳Tree","🌲Dense Forest"],
   ["🌳Tree","💧Water","🌲Rainforest"],
   ["🌳Tree","🔥Fire","🔥Campfire"],
   ["🌳Tree","🌬️Wind","🍂Falling Leaves"],
-  ["🌳Tree","🌍Earth","🌲Forest"],
   ["🌳Tree","⚡Lightning","🌳Struck Tree"],
   ["🌳Tree","🪓Axe","🪵Log"],
   ["🌲Forest","🌲Forest","🌲Ancient Forest"],
   ["🌲Forest","🔥Fire","🔥Forest Fire"],
   ["🌲Forest","🌧️Rain","🌳Rainforest"],
   ["🌲Forest","🌬️Wind","🍃Rustling Forest"],
+  ["🌲Forest","💧Water","🌊River"],
+  ["🌲Forest","🌞Sun","🌲Sunlit Forest"],
+  ["🌲Forest","🌾Field","🌿Woodland Edge"],
+  ["🌲Forest","🌍Earth","🌍Wilderness"],
   ["🌾Field","🌬️Wind","🌾Rustling Wheat"],
   ["🌾Field","💧Water","🌾Flooded Field"],
   ["🌾Field","🔥Fire","🌾Burnt Field"],
   ["🌾Field","🌍Earth","🚜Farmland"],
   ["🌾Rustling Wheat","🔥Fire","🍞Bread"],
   ["🌾Rustling Wheat","💧Water","🌾Soaked Wheat"],
-  ["🍞Bread","🔥Fire","🍞Toast"],
-  ["🌿Bush","💧Water","🌳Tree"],
-  ["🌿Bush","🔥Fire","🌾Ash"],
+  ["🌾Rustling Wheat","🌍Earth","🌾Wheat Farm"],
+  ["🌾Rustling Wheat","🌬️Wind","🌾Blowing Wheat"],
+  ["🌾Rustling Wheat","☁️Cloud","🌾Rainy Wheat"],
+  ["🌾Grass","💧Water","🌿Wet Grass"],
+  ["🌾Grass","🔥Fire","🌾Burnt Grass"],
+  ["🌾Grass","🌬️Wind","🍃Rustling Grass"],
+  ["🌾Grass","🌾Grass","🌿Meadow"],
+  ["🌾Grass","🌱Plant","🌿Lawn"],
+  ["🥬Vegetation","💧Water","🌿Lush Vegetation"],
+  ["🥬Vegetation","🔥Fire","🌾Burnt Vegetation"],
+  ["🥬Vegetation","🌬️Wind","🍃Swaying Vegetation"],
+  ["🥬Vegetation","🌞Sun","🌿Thriving Vegetation"],
+  ["🥬Vegetation","🥬Vegetation","🌲Jungle"],
+  ["🥬Vegetation","🌍Earth","🌾Field"],
   ["🌿Swamp","🌱Plant","🍄Mushroom"],
-  ["🌫️Mist","🌍Earth","🍄Mushroom"],
-  ["💨Smoke","☁️Cloud","🌫️Fog"],
-  ["💨Smoke","💨Smoke","🌫️Smog"],
-  ["💨Smoke","💧Water","🌧️Acid Rain"],
-  ["💨Smoke","🌬️Wind","🌫️Fog"],
+  ["🌿Swamp","💧Water","🌿Deep Swamp"],
+  ["🌿Swamp","🌬️Wind","🌿Misty Swamp"],
+  ["🌿Swamp","🔥Fire","💨Swamp Gas"],
+  ["🌿Swamp","🌍Earth","🌿Wetlands"],
+  ["🍄Mushroom","🍄Mushroom","🍄Mushroom Patch"],
+  ["🍄Mushroom","💧Water","🍄Wet Mushroom"],
+  ["🍄Mushroom","🔥Fire","🍄Cooked Mushroom"],
+  ["🍄Mushroom","🌍Earth","🍄Forest Mushroom"],
+  ["🍄Mushroom","🌱Plant","🌿Fungal Garden"],
+  ["🌾Ash","💧Water","🪨Soot"],
+  ["🌾Ash","🌬️Wind","💨Ash Cloud"],
+  ["🌾Ash","🌍Earth","🌱Fertile Soil"],
+  ["🌾Ash","🌾Ash","⬛Charcoal"],
+  ["🪨Mud","🔥Fire","🧱Brick"],
+  ["🪨Mud","💧Water","🪨Wet Mud"],
+  ["🪨Mud","🌬️Wind","🪨Dry Mud"],
+  ["🪨Mud","🌍Earth","🌱Swamp"],
+  ["🪨Mud","🌱Plant","🌿Muddy Plant"],
+  ["🪨Mud","🪨Mud","🧱Clay"],
   ["🔥Campfire","🌬️Wind","💨Smoke"],
   ["🔥Campfire","💧Water","💨Extinguished Fire"],
   ["🔥Campfire","🌍Earth","🪨Fire Pit"],
   ["🔥Campfire","🌱Plant","💨Smoke"],
-  ["🪨Mud","🔥Fire","🧱Brick"],
+  ["🪟Glass","🌬️Wind","🪟Window"],
+  ["🪟Glass","💧Water","💧Water Glass"],
+  ["🪟Glass","🔥Fire","💥Shattered Glass"],
+  ["🪟Glass","🪟Glass","🏠Glass House"],
+  ["🪟Glass","🌍Earth","🏺Glass Jar"],
   ["🧱Brick","🧱Brick","🏠House"],
   ["🧱Brick","💧Water","🧱Wet Brick"],
   ["🧱Brick","🔥Fire","🧱Fired Brick"],
@@ -477,22 +578,56 @@ const RAW = [
   ["🏠House","🔥Fire","🏠House Fire"],
   ["🏠House","🌬️Wind","🌪️Blown Roof"],
   ["🏠House","🌍Earth","🏘️Settlement"],
-  ["🏠House","👥Community","🏘️Neighbourhood"],
+  ["🏠House","👤Human","🏡Home"],
+  ["🏠House","❤️Love","🏡Home"],
+  ["🏠House","🌱Plant","🏡Garden Home"],
+  ["🏠House","⚡Electricity","🏠Powered Home"],
   ["🏡Home","🏡Home","🏘️Neighbourhood"],
   ["🏡Home","💧Water","🌧️Leaky Roof"],
   ["🏡Home","🔥Fire","🏚️Burnt Home"],
   ["🏡Home","🌬️Wind","📺YouTube"],
+  ["🏡Home","🌱Plant","🏡Garden"],
+  ["🏡Home","⚡Electricity","💻Smart Home"],
+  ["🏡Home","🌞Sun","🏡Sunny Home"],
   ["🏰Castle","🏰Castle","👑Kingdom"],
   ["🏰Castle","💧Water","🏰Moat"],
   ["🏰Castle","🔥Fire","🏚️Siege"],
-  ["🔩Metal","🔩Metal","⚙️Machine"],
+  ["🏰Castle","🌬️Wind","🏰Windy Castle"],
+  ["🏰Castle","🌱Plant","🌿Castle Garden"],
+  ["🔩Metal","🔩Metal","🏗️Steel Frame"],
   ["🔩Metal","🔥Fire","🛠️Tool"],
   ["🔩Metal","💧Water","🦠Rust"],
-  ["🔩Metal","🌬️Wind","⚙️Steam Engine"],
+  ["🔩Metal","🌬️Wind","⚙️Turbine Blade"],
+  ["🔩Metal","🌍Earth","⛏️Iron Mine"],
+  ["🔩Metal","🪨Stone","🔨Hammer"],
+  ["🔩Metal","🔋Energy","⚙️Machine"],
+  ["🔩Metal","🛠️Tool","⚙️Machine"],
   ["🛠️Tool","🌳Tree","🪚Wood Plank"],
   ["🪚Wood Plank","🛠️Tool","📦Box"],
-  ["🪟Glass","🌬️Wind","🪟Window"],
-  ["🪟Glass","🌍Earth","🏺Bottle"],
+  ["🌍Earth","💧Water","🪨Mud"],
+  ["🌱Life","💧Water","🌱Plant"],
+  ["🔥Fire","🌍Atmosphere","🌞Sun"],
+  ["🌍Atmosphere","🔥Fire","🌞Sun"],
+  ["💻Computer","📡Signal","🌐Internet"],
+  ["🌱Plant","🔥Fire","☕Coffee"],
+  ["👤Human","👤Human","❤️Love"],
+  ["⚡Electricity","💻Computer","🌐Internet"],
+  ["⚙️Machine","⚡Electricity","🤖Robot"],
+  ["💧Water","☁️Cloud","🌫️Mist"],
+  ["👤Human","🌹Rose","❤️Love"],
+  ["📺YouTube","📹Video","▶️Subscriber"],
+  ["📹Video","👤Human","⭐YouTuber"],
+  ["🌍Earth","🌌Galaxy","⏳Time"],
+  ["🌞Sun","🌍Earth","⏳Time"],
+  ["📺YouTube","📊Analytics","📈Algorithm"],
+  ["📺YouTube","💻Computer","📊Channel Stats"],
+  ["📈Algorithm","📺YouTube","💰Money"],
+  ["📺Channel","💰Money","🏆Creator Award"],
+  ["💰Money","📹Video","🎁Giveaway"],
+  ["🚗Car","🎮Game","🚲Unicycle"],
+  ["🚲Unicycle","👤Human","🎴Jack On A Unicycle"],
+  ["🚧Traffic Cone","📺YouTube","🎴Traffic Cone Becky"],
+  ["📹Video","😂Random Clip","😂Meme"],
   ["🥛Milk","🔥Fire","🧀Cheese"],
   ["🧀Cheese","🍞Bread","🥪Sandwich"],
   ["🍯Honey","🌾Field","🍰Cake"],
@@ -506,38 +641,46 @@ const RAW = [
   ["🐟Fish","🐟Fish","🐠School of Fish"],
   ["🐟Fish","🔥Fire","🍣Cooked Fish"],
   ["🐟Fish","🌊Ocean","🐠Tropical Fish"],
+  ["🐟Fish","🌍Earth","🐟River Fish"],
+  ["🐟Fish","🌬️Wind","🎣Fishing Trip"],
   ["🐄Cow","🌾Field","🐔Chicken"],
   ["🐄Cow","🌱Plant","🥛Milk"],
-  ["🐝Bee","🐝Bee","🍯Beehive"],
+  ["🐄Cow","🐄Cow","🐄Herd"],
+  ["🐄Cow","💧Water","🐄Drinking Cow"],
+  ["🐄Cow","🔥Fire","🥩Beef"],
+  ["🐄Cow","🌬️Wind","🐄Wandering Cow"],
+  ["🐔Chicken","🐔Chicken","🐔Flock"],
+  ["🐔Chicken","💧Water","🐔Wet Chicken"],
+  ["🐔Chicken","🔥Fire","🍗Roast Chicken"],
+  ["🐔Chicken","🌍Earth","🐔Free Range"],
+  ["🐔Chicken","🥚Egg","🐔Hen"],
   ["🐶Dog","🐶Dog","🐕Dog Pack"],
-  ["🐕Kong","🐕Flossy","🐾Dog Duo"],
-  ["🐾Dog Duo","📺YouTube","🐕Dog Video"],
-  ["🐾Dog Duo","📹Video","🐶Dog Vlog"],
   ["🦴Bone","🐶Dog","🐕Happy Dog"],
   ["🔋Energy","⚙️Machine","🤖Robot"],
   ["🔋Energy","💧Water","⚡Electricity"],
+  ["🔋Energy","🔋Energy","⚡Power Plant"],
+  ["🔋Energy","🌬️Wind","💨Wind Power"],
+  ["🔋Energy","🌞Sun","☀️Solar Energy"],
+  ["🔋Energy","🌊Ocean","🌊Wave Power"],
+  ["⚡Electricity","⚡Electricity","⚡Power Grid"],
+  ["⚡Electricity","💧Water","⚡Hydropower"],
+  ["⚡Electricity","🌬️Wind","⚡Wind Power"],
+  ["⚡Electricity","🌍Earth","⚡Ground Wire"],
   ["⚡Electricity","⚙️Machine","💻Computer"],
-  ["⚡Electricity","💻Computer","🌐Internet"],
   ["💻Computer","💻Computer","🖥️Server"],
   ["💻Computer","🌐Internet","📡Signal"],
-  ["💻Computer","🌐Internet","📱Website"],
-  ["📱Website","📺YouTube","📺YouTube"],
   ["📡Signal","📺YouTube","🔔Notification"],
   ["📡Signal","📱Website","💬Comment"],
   ["🌐Internet","🌐Internet","🕸️Web Empire"],
   ["🌐Internet","💻Computer","📱Website"],
   ["🌐Internet","📺YouTube","🎬Content"],
   ["📺YouTube","📺YouTube","📡Livestream"],
-  ["📺YouTube","🎥Channel","📺Channel"],
-  ["📺YouTube","🌬️Wind","🎥Channel"],
   ["📺YouTube","💬Comment","👍Like Button"],
   ["📺YouTube","▶️Subscriber","🔔Notification Bell"],
   ["📺YouTube","📊Analytics","📊YouTube Studio"],
-  ["📺YouTube","📡Signal","📡Livestream"],
   ["📺YouTube","🎮Game","🎮Gaming Channel"],
-  ["📺YouTube","🍳Cooking","🍳Cooking Channel"],
   ["📺YouTube","🖼️Thumbnail","🎥YouTube Video"],
-  ["📺YouTube","🌍Earth","👥r/jacksucksatlife"],
+  ["📺YouTube","👥Community","👥r/jacksucksatlife"],
   ["🎥Channel","🎥Channel","📺Network"],
   ["🎥Channel","💧Water","📹Video"],
   ["📹Video","📹Video","🎬Series"],
@@ -549,7 +692,6 @@ const RAW = [
   ["🎬Content","🔥Fire","🔥Trending"],
   ["🔥Trending","📺YouTube","📈Algorithm"],
   ["🧑‍🦱JackSucksAtLife","📺YouTube","📺JackSucksAtLife"],
-  ["🧑‍🦱JackSucksAtLife","📺YouTube","📺No Context JackSucksAtLife"],
   ["📺JackSucksAtLife","🎥Video","📺JackSucksAtStuff"],
   ["📺JackSucksAtLife","🌍Earth","🌍JackSucksAtGeography"],
   ["📺JackSucksAtLife","🌐Internet","🇪🇸JackSucksAtEspañol"],
@@ -564,7 +706,6 @@ const RAW = [
   ["📺JackSucksAtLife","❤️Love","❤️Becky"],
   ["📺JackSucksAtLife","📺YouTube","📺Jack Massey Welsh"],
   ["📺JackSucksAtLife","📺JackSucksAtLife","📺Jack Highlights"],
-  ["📺JackSucksAtLife","🧑‍🦱JackSucksAtLife","📺JSAL Legacy"],
   ["🧑‍🦱JackSucksAtLife","📺JackSucksAtLife","📺JSAL Legacy"],
   ["🧑‍🦱JackSucksAtLife","📺YouTube","📺No Context JackSucksAtLife"],
   ["🧑‍🦱JackSucksAtLife","🌍Earth","🌍JackSucksAtGeography"],
@@ -574,14 +715,12 @@ const RAW = [
   ["🧑‍🦱JackSucksAtLife","👩Becky","💑Jack & Becky"],
   ["🧑‍🦱JackSucksAtLife","🧑‍💻Kai","✂️Kai the Editor"],
   ["🧑‍🦱JackSucksAtLife","🌳Tree","🌳Wee Wee Bush"],
-  ["🧑‍🦱JackSucksAtLife","🌬️Wind","🎭Pink Wig Promise"],
-  ["🧑‍🦱JackSucksAtLife","🐶Dog","🐕Kong"],
+  ["🧑‍🦱JackSucksAtLife","🐶Dog","🐶Kong"],
   ["🧑‍🦱JackSucksAtLife","👑YouTube Legend","📺JSAL Legacy"],
   ["🧑‍🦱JackSucksAtLife","📦Play Button Collection","📦Jack Shelf"],
   ["🧑‍🦱JackSucksAtLife","💎Diamond Play Button","💎Jack Diamond"],
   ["🧑‍🦱JackSucksAtLife","🔴Red Diamond Play Button","🔴Jack Red Diamond"],
   ["📺Jack Massey Welsh","🚗Tesla","🚗Tesla Video"],
-  ["📺JackSucksAtGeography","🌍Earth","🗺️World Map"],
   ["🌍JackSucksAtGeography","🌍Earth","🗺️World Map"],
   ["🌍JackSucksAtGeography","🗺️World Map","🧠Geography Quiz"],
   ["🌍JackSucksAtGeography","🧠Geography Quiz","🌎Country Guessing"],
@@ -589,19 +728,18 @@ const RAW = [
   ["🌍JackSucksAtGeography","📺YouTube","🌍Geography Channel"],
   ["🌍JackSucksAtGeography","🗺️Map Challenge","🌎Country Quiz"],
   ["🌍JackSucksAtGeography","🗺️World Map","🌎Geo Master"],
-  ["🏆Geography Champion","📺YouTube","🧑‍🦱JackSucksAtGeography"],
   ["🏆Play Button","📺YouTube","🥈Silver Play Button"],
-  ["🥈Silver Play Button","🏆Play Button","🥇Gold Play Button"],
-  ["🥇Gold Play Button","🏆Play Button","💎Diamond Play Button"],
-  ["💎Diamond Play Button","🏆Play Button","🔴Red Diamond Play Button"],
   ["🥈Silver Play Button","📺YouTube","📈100K Subscribers"],
+  ["🥈Silver Play Button","🏆Play Button","🥇Gold Play Button"],
   ["🥇Gold Play Button","📺YouTube","📈1M Subscribers"],
+  ["🥇Gold Play Button","🏆Play Button","💎Diamond Play Button"],
   ["💎Diamond Play Button","📺YouTube","📈10M Subscribers"],
+  ["💎Diamond Play Button","🏆Play Button","🔴Red Diamond Play Button"],
   ["🔴Red Diamond Play Button","📺YouTube","📈100M Subscribers"],
   ["📦Play Button Collection","🥈Silver Play Button","📦More Play Buttons"],
   ["📦More Play Buttons","🥇Gold Play Button","📦Huge Play Button Collection"],
   ["📦Huge Play Button Collection","💎Diamond Play Button","📦Ultimate Play Button Shelf"],
-  ["📦Play Button Collection","📹Video","🎥Play Button Tour"],
+  ["📦Ultimate Play Button Shelf","📹Video","🎥Play Button Tour"],
   ["📦Play Button Collection","👑YouTube Legend","💎Creator Museum"],
   ["📦Play Button Collection","🔥Fire","🔥Play Button Viral"],
   ["🎮Skycade","🧑‍🦱JackSucksAtLife","🖥️Minecraft Server"],
@@ -617,7 +755,6 @@ const RAW = [
   ["🧱Skycade Base","🏗️Minecraft Build","🏰Skycade Castle"],
   ["🏰Skycade Castle","📹Video","🎥Castle Build Video"],
   ["👥r/jacksucksatlife","👥r/jacksucksatlife","📌Mega Thread"],
-  ["👥r/jacksucksatlife","🌬️Wind","💬Reddit Thread"],
   ["👥r/jacksucksatlife","🔥Fire","🧑LizardLava"],
   ["👥r/jacksucksatlife","🌍Earth","🧑FreddieThePebble"],
   ["👥r/jacksucksatlife","🌬️Wind","🧑RedditReviver"],
@@ -634,7 +771,6 @@ const RAW = [
   ["👥r/jacksucksatlife","🏆Geography Champion","🧑REMINGTONTHETHIRD"],
   ["👥r/jacksucksatlife","⚡Electric Car","🧑cybermxn"],
   ["👥r/jacksucksatlife","📢Viral Moment","🧑JustAlfie"],
-  ["👥r/jacksucksatlife","📺YouTube","🧑DeadSubDoc"],
   ["👥r/jacksucksatlife","🗺️Map Challenge","🧑LeioCera"],
   ["👥r/jacksucksatlife","🎮Pop Up Pirate","🧑GamingYoutube14"],
   ["👥r/jacksucksatlife","🌫️Mist","🧑SappySnow"],
@@ -654,6 +790,7 @@ const RAW = [
   ["💩Turdboi420","🔥Fire","💩Legendary Meme"],
   ["💩Legendary Meme","💩Turdboi420","💩Ultimate Meme"],
   ["💩Ultimate Meme","💩Turdboi420","💩Meme King"],
+  ["💩Meme King","📺YouTube","😂Legendary Meme Channel"],
   ["🚗Tesla","🚗Tesla","🚗Tesla Fleet"],
   ["🚗Tesla","💧Water","🚘Car Channel"],
   ["🚗Tesla","🔥Fire","🔋Battery"],
@@ -680,11 +817,9 @@ const RAW = [
   ["📊Analytics","📹Video","📈Growth Chart"],
   ["📈Growth Chart","📺YouTube","📉Sub Drop"],
   ["🚀Viral Video","📺YouTube","🏆Play Button"],
-  ["🚀Viral Video","📺YouTube","📺Channel"],
   ["📺Channel","▶️Subscriber","📈Algorithm"],
-  ["📈Algorithm","📺YouTube","📊Trending"],
   ["📊Trending","⭐YouTuber","🚀Viral Video"],
-  ["📢Viral Moment","📺YouTube","🧻Turdboi420"],
+  ["📢Viral Moment","📺YouTube","💩Turdboi420"],
   ["😂Random Clip","🌬️Wind","📢Viral Moment"],
   ["📺No Context JackSucksAtLife","🔥Fire","😂Random Clip"],
   ["🎮Pop Up Pirate","🔥Fire","💥Pirate Explosion"],
@@ -701,17 +836,28 @@ const RAW = [
   ["🏆Creator Award","📦Play Button Collection","🥇Gold Trophy"],
   ["💎Creator Museum","📹Video","🎥Museum Tour"],
   ["🌍Earth","🌪️Tornado","🌍Atmosphere"],
-  ["🌍Atmosphere","🔥Fire","☀️Sun"],
+  ["🌍Atmosphere","💧Water","☁️Weather"],
+  ["🌍Atmosphere","🌬️Wind","🌬️Jet Stream"],
+  ["🌍Atmosphere","🌱Plant","🌿Oxygen"],
+  ["☀️Sun","☀️Sun","🌟Solar Flare"],
+  ["☀️Sun","💧Water","🌈Rainbow"],
+  ["☀️Sun","🌬️Wind","🌤️Warm Breeze"],
+  ["☀️Sun","🌱Plant","🌻Sunflower"],
+  ["☀️Sun","🌍Earth","🌍Warm Earth"],
   ["☀️Sun","🌍Earth","🌎Planet"],
   ["🌎Planet","🌎Planet","🌌Solar System"],
+  ["🌎Planet","💧Water","🌊Ocean World"],
+  ["🌎Planet","🔥Fire","🌋Lava Planet"],
+  ["🌎Planet","🌬️Wind","🌪️Stormy Planet"],
   ["🌌Solar System","🌌Solar System","🌌Galaxy"],
+  ["🌌Solar System","🔥Fire","⭐Star"],
+  ["🌌Solar System","💧Water","🌊Ice Planet"],
   ["⏳Time","🏰Castle","🏛️Ruins"],
   ["⏳Time","🌱Plant","🌳Growth"],
   ["👤Human","🏠House","👨‍👩‍👧Family"],
   ["👤Human","💻Computer","👨‍💻Programmer"],
   ["👑King","👥Community","👑Kingdom"],
   ["❤️Becky","🚧Traffic Cone","🎴Traffic Cone Becky"],
-  ["🚧Traffic Cone","📺YouTube","🎴Traffic Cone Becky"],
   ["🐶Kong","🐶Dog","🐕Flossy"],
   ["🐕Flossy","🏡Home","🐾Dog Chaos"],
   ["🧑‍🦱JackSucksAtLife","🌊Ocean","🏝️Jack Island"],
@@ -749,10 +895,8 @@ const RAW = [
   ["🌎Geo Master","📹Video","🎥Geo Master Video"],
   ["🎥Geo Master Video","🔥Fire","🔥Geo Viral"],
   ["🔥Geo Viral","📺YouTube","📺Geo Champion"],
-  ["🎓Learning Channel","🌍JackSucksAtGeography","🌍Geography Lesson"],
   ["🌍Geography Lesson","📹Video","🎥Geography Clip"],
   ["🎥Geography Clip","🔥Fire","🔥Geography Viral"],
-  ["📺Geography Throwback","📹Video","🎥Throwback Video"],
   ["🎥YouTube Video","🔥Fire","🔥Trending Video"],
   ["🔥Trending Video","📺YouTube","📈Algorithm Boost"],
   ["📈Algorithm Boost","📹Video","🚀Exploding Channel"],
@@ -764,210 +908,30 @@ const RAW = [
   ["🎥Legacy Video","🔥Fire","🔥Legacy Viral"],
   ["🔥Legacy Viral","📺YouTube","📜Creator History"],
   ["🏆Milestone","▶️Subscriber","🥈Silver Play Button"],
-  ["🏆Milestone","🥈Silver Play Button","🥇Gold Play Button"],
-  ["🏆Milestone","🥇Gold Play Button","💎Diamond Play Button"],
-  ["🏆Milestone","💎Diamond Play Button","🔴Red Diamond Play Button"],
   ["📺Channel","📊Channel Stats","🏆Milestone"],
-  ["🌾Rustling Wheat","🌍Earth","🌾Wheat Farm"],
-  ["🌾Rustling Wheat","💧Water","🌾Wet Wheat"],
-  ["🌾Rustling Wheat","🌬️Wind","🌾Blowing Wheat"],
-  ["🌾Rustling Wheat","☁️Cloud","🌾Rainy Wheat"],
-  ["🌱Seed","🔥Fire","🌾Ash"],
-  ["🌱Seed","☁️Cloud","🌧️Watered Seed"],
-  ["🌱Seed","🌬️Wind","🌾Scattered Seeds"],
-  ["🌱Seed","🌱Seed","🌿Garden"],
-  ["🌾Grass","💧Water","🌿Wet Grass"],
-  ["🌾Grass","🔥Fire","🌾Burnt Grass"],
-  ["🌾Grass","🌬️Wind","🍃Rustling Grass"],
-  ["🌾Grass","🌾Grass","🌿Meadow"],
-  ["🌾Grass","🌱Plant","🌿Lawn"],
-  ["🌫️Fog","💧Water","🌫️Dense Fog"],
-  ["🌫️Fog","🔥Fire","💨Steam"],
-  ["🌫️Fog","🌬️Wind","🌫️Clearing Fog"],
-  ["🌫️Fog","🌞Sun","🌤️Clearing Sky"],
-  ["🌫️Fog","🌍Earth","🌫️Ground Fog"],
-  ["🌾Ash","💧Water","🪨Soot"],
-  ["🌾Ash","🌬️Wind","💨Ash Cloud"],
-  ["🌾Ash","🌍Earth","🌱Fertile Soil"],
-  ["🌾Ash","🌾Ash","⬛Charcoal"],
-  ["🪨Mud","💧Water","🪨Wet Mud"],
-  ["🪨Mud","🌬️Wind","🪨Dry Mud"],
-  ["🪨Mud","🌍Earth","🌱Swamp"],
-  ["🪨Mud","🌱Plant","🌿Muddy Plant"],
-  ["🪨Mud","🪨Mud","🧱Clay"],
-  ["🥬Vegetation","💧Water","🌿Lush Vegetation"],
-  ["🥬Vegetation","🔥Fire","🌾Burnt Vegetation"],
-  ["🥬Vegetation","🌬️Wind","🍃Swaying Vegetation"],
-  ["🥬Vegetation","🌞Sun","🌿Thriving Vegetation"],
-  ["🥬Vegetation","🥬Vegetation","🌲Jungle"],
-  ["🥛Milk","💧Water","🥛Diluted Milk"],
-  ["🥛Milk","🌬️Wind","💨Spilt Milk"],
-  ["🥛Milk","🥛Milk","🧈Cream"],
-  ["🥛Milk","🍰Cake","🍰Milk Cake"],
-  ["🥛Milk","🍯Honey","🍯Honeyed Milk"],
-  ["🍯Honey","💧Water","🍵Honey Tea"],
-  ["🍯Honey","🔥Fire","🍯Warm Honey"],
-  ["🍯Honey","🌬️Wind","🍯Honey Pot"],
-  ["🍯Honey","🍯Honey","🍯Honeycomb"],
-  ["🍰Cake","💧Water","🍰Soggy Cake"],
-  ["🍰Cake","🌬️Wind","🎂Birthday Cake"],
-  ["🍰Cake","🍰Cake","🎂Wedding Cake"],
-  ["🍰Cake","🍯Honey","🍯Honey Cake"],
-  ["🌵Cactus","🌵Cactus","🏜️Cactus Field"],
-  ["🌵Cactus","🔥Fire","🏜️Burning Cactus"],
-  ["🌵Cactus","🌍Earth","🏜️Desert"],
-  ["🌵Cactus","🌬️Wind","🌵Swaying Cactus"],
-  ["🌵Cactus","🪨Stone","🪨Rocky Desert"],
-  ["🌺Flower","🌺Flower","💐Bouquet"],
-  ["🌺Flower","🔥Fire","🌸Wilted Flower"],
-  ["🌺Flower","🌧️Rain","🌸Blooming Flower"],
-  ["🌺Flower","🌍Earth","🌷Garden"],
-  ["🐝Bee","🐝Bee","🐝Swarm"],
-  ["🐝Bee","🔥Fire","💨Smoke Screen"],
-  ["🐝Bee","🌍Earth","🐝Beehive"],
-  ["🐝Bee","💧Water","🐝Wet Bee"],
-  ["🐄Cow","🐄Cow","🐄Herd"],
-  ["🐄Cow","💧Water","🐄Drinking Cow"],
-  ["🐄Cow","🔥Fire","🥩Beef"],
-  ["🐄Cow","🌬️Wind","🐄Wandering Cow"],
-  ["🐔Chicken","🐔Chicken","🐔Flock"],
-  ["🐔Chicken","💧Water","🐔Wet Chicken"],
-  ["🐔Chicken","🔥Fire","🍗Roast Chicken"],
-  ["🐔Chicken","🌍Earth","🐔Free Range"],
-  ["🐔Chicken","🥚Egg","🐔Hen"],
-  ["🪟Glass","💧Water","💧Water Glass"],
-  ["🪟Glass","🔥Fire","💥Shattered Glass"],
-  ["🪟Glass","🪟Glass","🏠Glass House"],
-  ["🪟Glass","🌍Earth","🏺Glass Jar"],
+  ["🌊River","💧Water","🌊Deep River"],
+  ["🌊River","🌍Earth","🌊River Delta"],
+  ["🌊River","🔥Fire","♨️Hot Spring"],
+  ["🌊Flood","🌍Earth","🌿Floodplain"],
+  ["🌊Flood","🏠House","🏠Flooded House"],
+  ["🌲Jungle","💧Water","🌊River Jungle"],
+  ["🌲Jungle","🔥Fire","🔥Jungle Fire"],
+  ["🌲Jungle","🌍Earth","🌍Jungle Floor"],
+  ["🏭Factory","🏭Factory","🌆Industrial City"],
+  ["🏭Factory","💧Water","🏭Steam Factory"],
+  ["🏭Factory","🌬️Wind","💨Factory Smoke"],
+  ["🏭Factory","🌍Earth","⛏️Mine"],
+  ["🏭Factory","🔥Fire","🔥Factory Fire"],
+  ["👑Kingdom","💧Water","🌊Island Kingdom"],
+  ["👑Kingdom","🔥Fire","🔥Kingdom Fire"],
+  ["👑Kingdom","🌍Earth","🌍Empire"],
+  ["🌀Windmill","🌬️Wind","⚡Wind Energy"],
+  ["🌀Windmill","🌾Field","🌾Mill"],
   ["⚙️Machine","⚙️Machine","🏭Factory"],
   ["⚙️Machine","💧Water","🚿Water Pump"],
   ["⚙️Machine","🌍Earth","⛏️Mining Machine"],
   ["⚙️Machine","🌬️Wind","🌀Windmill"],
   ["⚙️Machine","🌞Sun","☀️Solar Panel"],
-  ["🔋Energy","🔋Energy","⚡Power Plant"],
-  ["🔋Energy","🌬️Wind","💨Wind Power"],
-  ["🔋Energy","🌞Sun","☀️Solar Energy"],
-  ["🔋Energy","🌊Ocean","🌊Wave Power"],
-  ["⚡Electricity","⚡Electricity","⚡Power Grid"],
-  ["⚡Electricity","💧Water","⚡Hydropower"],
-  ["⚡Electricity","🌬️Wind","⚡Wind Power"],
-  ["⚡Electricity","🌍Earth","⚡Ground Wire"],
-  ["🏖️Sand","🌬️Wind","🌪️Sandstorm"],
-  ["🏖️Sand","🏖️Sand","🏜️Desert"],
-  ["🏖️Sand","💧Water","🏖️Wet Sand"],
-  ["🏖️Sand","🌍Earth","🏖️Sandy Soil"],
-  ["🔩Metal","💧Water","🦠Rust"],
-  ["🔩Metal","🌍Earth","⛏️Iron Mine"],
-  ["🔩Metal","🔩Metal","🏗️Steel Frame"],
-  ["🔩Metal","🌬️Wind","⚙️Turbine Blade"],
-  ["🔩Metal","🪨Stone","🔨Hammer"],
-  ["🌊Wave","🌊Wave","🌊Tsunami"],
-  ["🌊Wave","🔥Fire","🌊Steamy Wave"],
-  ["🌊Wave","🌱Plant","🌿Seaweed"],
-  ["🏖️Beach","🏖️Beach","🏝️Paradise"],
-  ["🏖️Beach","💧Water","🌊Shoreline"],
-  ["🏖️Beach","🌱Plant","🌴Coastal Path"],
-  ["🏝️Island","🌱Plant","🌴Tropical Island"],
-  ["🏝️Island","🌬️Wind","🌴Windy Isle"],
-  ["🏝️Island","🔥Fire","🌋Volcanic Island"],
-  ["🏝️Island","🏝️Island","🌍Archipelago"],
-  ["🌋Volcano","🌋Volcano","🌏Ring of Fire"],
-  ["🌋Volcano","🌬️Wind","🌋Ash Cloud"],
-  ["🌋Volcano","🌱Plant","🌋Volcanic Soil"],
-  ["⛰️Mountain","⛰️Mountain","🏔️Mountain Range"],
-  ["⛰️Mountain","🌬️Wind","🌬️Alpine Wind"],
-  ["⛰️Mountain","🌱Plant","🌿Highland"],
-  ["⛰️Mountain","🌍Earth","🏔️Cliff"],
-  ["⛰️Mountain","🌞Sun","⛰️Sunlit Peak"],
-  ["🌲Forest","🌲Forest","🌲Ancient Forest"],
-  ["🌲Forest","💧Water","🌊River"],
-  ["🌲Forest","🌞Sun","🌲Sunlit Forest"],
-  ["🌲Forest","🌾Field","🌿Woodland Edge"],
-  ["🌲Forest","🌍Earth","🌍Wilderness"],
-  ["🌲Forest","🌬️Wind","🍃Wind Through Trees"],
-  ["🌿Swamp","💧Water","🌿Deep Swamp"],
-  ["🌿Swamp","🌬️Wind","🌿Misty Swamp"],
-  ["🌿Swamp","🔥Fire","💨Swamp Gas"],
-  ["🌿Swamp","🌍Earth","🌿Wetlands"],
-  ["🌫️Mist","💧Water","🌧️Drizzle"],
-  ["🌫️Mist","🔥Fire","💨Light Steam"],
-  ["🌫️Mist","🌬️Wind","🌫️Drifting Mist"],
-  ["🌫️Mist","🌫️Mist","🌫️Dense Fog"],
-  ["💨Smoke","💨Smoke","🌫️Smog"],
-  ["💨Smoke","🌍Earth","🌫️Dusty Air"],
-  ["💨Smoke","🌞Sun","🌤️Hazy Sky"],
-  ["💨Smoke","🌬️Wind","💨Dispersing Smoke"],
-  ["🌧️Rain","🌧️Rain","🌊Flood"],
-  ["🌧️Rain","⛰️Mountain","💧Mountain Stream"],
-  ["🌧️Rain","🏖️Sand","🏖️Wet Beach"],
-  ["🌧️Rain","🌬️Wind","🌧️Sideways Rain"],
-  ["🌧️Rain","🔥Fire","💨Extinguished"],
-  ["🌧️Rain","🌊Ocean","🌊Rising Sea"],
-  ["☁️Cloud","⛰️Mountain","🌫️Mountain Cloud"],
-  ["☁️Cloud","🌞Sun","⛅Partly Cloudy"],
-  ["☁️Cloud","🌧️Rain","⛈️Storm Cloud"],
-  ["☁️Cloud","☁️Cloud","🌧️Heavy Rain"],
-  ["⚡Lightning","⚡Lightning","⚡Lightning Storm"],
-  ["⚡Lightning","🌳Tree","🌳Struck Tree"],
-  ["⚡Lightning","🏖️Sand","🪟Fulgurite"],
-  ["⚡Lightning","⛰️Mountain","⛰️Thunder Peak"],
-  ["⚡Lightning","💧Water","⚡Electrocution"],
-  ["⚡Lightning","🌱Plant","🌾Scorched Plant"],
-  ["♨️Steam","♨️Steam","☁️Steam Cloud"],
-  ["♨️Steam","🌍Earth","🌋Geyser"],
-  ["♨️Steam","🌱Plant","🌿Steamed Plant"],
-  ["♨️Steam","☁️Cloud","🌧️Rain"],
-  ["🌋Lava","☁️Cloud","🌫️Volcanic Fog"],
-  ["🌋Lava","💧Water","🪨Obsidian"],
-  ["🌋Lava","🌬️Wind","🌋Lava Flow"],
-  ["🌋Lava","🌱Plant","🌋Scorched Earth"],
-  ["🌋Lava","🪨Stone","🪨Basalt"],
-  ["🪨Stone","⚡Lightning","🪨Fulgurite"],
-  ["🪨Stone","🌧️Rain","🪨Wet Stone"],
-  ["🪨Stone","🪨Stone","🏔️Boulder"],
-  ["🪨Stone","💧Water","🏖️Sand"],
-  ["🏠House","🌱Plant","🏡Garden Home"],
-  ["🏠House","🧱Brick","🏰Manor"],
-  ["🏠House","⚡Electricity","🏠Powered Home"],
-  ["🏡Home","🌱Plant","🏡Garden"],
-  ["🏡Home","⚡Electricity","💻Smart Home"],
-  ["🏡Home","🌞Sun","🏡Sunny Home"],
-  ["🍞Bread","💧Water","🍞Soggy Bread"],
-  ["🍞Bread","🧀Cheese","🥪Cheese Sandwich"],
-  ["🍞Bread","🍯Honey","🍞Honey Toast"],
-  ["🍞Toast","💧Water","🍞Wet Toast"],
-  ["🍞Toast","🧀Cheese","🥪Cheese Toast"],
-  ["🍞Toast","🍯Honey","🍞Honey Toast"],
-  ["🏺Bottle","🔥Fire","♨️Hot Drink"],
-  ["🏺Bottle","🌬️Wind","🏺Empty Bottle"],
-  ["🏺Bottle","🏺Bottle","📦Bottle Collection"],
-  ["🥤Drink","🔥Fire","☕Hot Drink"],
-  ["🥤Drink","🧊Ice","🧊Iced Drink"],
-  ["🥤Drink","🥤Drink","🍻Drinks"],
-  ["🧀Cheese","🧀Cheese","🧀Cheese Wheel"],
-  ["🧀Cheese","🔥Fire","🍕Melted Cheese"],
-  ["🧀Cheese","🍞Bread","🥪Cheese Sandwich"],
-  ["🧀Cheese","🌬️Wind","🧀Aged Cheese"],
-  ["🐟Fish","🐟Fish","🐠School of Fish"],
-  ["🐟Fish","🔥Fire","🍣Cooked Fish"],
-  ["🐟Fish","🌍Earth","🐟River Fish"],
-  ["🐟Fish","🌬️Wind","🎣Fishing Trip"],
-  ["🌿Bush","🌿Bush","🌲Hedge"],
-  ["🌿Bush","💧Water","🌿Wet Bush"],
-  ["🌿Bush","🔥Fire","🌾Burnt Bush"],
-  ["🌿Bush","🌬️Wind","🍃Rustling Bush"],
-  ["🌿Bush","🌺Flower","🌸Flower Bush"],
-  ["🍄Mushroom","🍄Mushroom","🍄Mushroom Patch"],
-  ["🍄Mushroom","💧Water","🍄Wet Mushroom"],
-  ["🍄Mushroom","🔥Fire","🍄Cooked Mushroom"],
-  ["🍄Mushroom","🌍Earth","🍄Forest Mushroom"],
-  ["🍄Mushroom","🌱Plant","🌿Fungal Garden"],
-  ["🌪️Dust Storm","🌬️Wind","🌪️Mega Dust Storm"],
-  ["🌪️Dust Storm","🌍Earth","🏜️Dust Bowl"],
-  ["🌪️Dust Storm","☁️Cloud","🌧️Dust Rain"],
-  ["🌪️Dust Storm","🔥Fire","💥Firestorm"],
-  ["🌀Windmill","🌬️Wind","⚡Wind Energy"],
-  ["🌀Windmill","🌾Field","🌾Mill"],
   ["☀️Solar Panel","☀️Sun","⚡Solar Power"],
   ["☀️Solar Panel","☀️Solar Panel","⚡Solar Farm"],
   ["👤Human","👤Human","👥Crowd"],
@@ -988,79 +952,13 @@ const RAW = [
   ["🏛️Ruins","🌱Plant","🌿Overgrown Ruins"],
   ["🏛️Ruins","🌍Earth","🏛️Ancient Site"],
   ["🌳Growth","💧Water","🌲Thriving Tree"],
-  ["🌲Jungle","💧Water","🌊River Jungle"],
-  ["🌲Jungle","🔥Fire","🔥Jungle Fire"],
-  ["🌲Jungle","🌍Earth","🌍Jungle Floor"],
-  ["🌎Planet","💧Water","🌊Ocean World"],
-  ["🌎Planet","🔥Fire","🌋Lava Planet"],
-  ["🌎Planet","🌬️Wind","🌪️Stormy Planet"],
-  ["🌌Solar System","🌌Solar System","🌌Galaxy"],
-  ["🌌Solar System","🔥Fire","⭐Star"],
-  ["🌌Solar System","💧Water","🌊Ice Planet"],
-  ["🏭Factory","🏭Factory","🌆Industrial City"],
-  ["🏭Factory","💧Water","🏭Steam Factory"],
-  ["🏭Factory","🌬️Wind","💨Factory Smoke"],
-  ["🏭Factory","🌍Earth","⛏️Mine"],
-  ["🏭Factory","🔥Fire","🔥Factory Fire"],
-  ["🏰Castle","🏰Castle","👑Kingdom"],
-  ["🏰Castle","💧Water","🏰Moat"],
-  ["🏰Castle","🌬️Wind","🏰Windy Castle"],
-  ["🏰Castle","🌱Plant","🌿Castle Garden"],
-  ["👑Kingdom","💧Water","🌊Island Kingdom"],
-  ["👑Kingdom","🔥Fire","🔥Kingdom Fire"],
-  ["👑Kingdom","🌍Earth","🌍Empire"],
-  ["🌍Atmosphere","💧Water","☁️Weather"],
-  ["🌍Atmosphere","🌬️Wind","🌬️Jet Stream"],
-  ["🌍Atmosphere","🌱Plant","🌿Oxygen"],
-  ["☀️Sun","☀️Sun","🌟Solar Flare"],
-  ["☀️Sun","💧Water","🌈Rainbow"],
-  ["☀️Sun","🌬️Wind","🌤️Warm Breeze"],
-  ["☀️Sun","🌱Plant","🌻Sunflower"],
-  ["☀️Sun","🏖️Sand","🏜️Hot Desert"],
-  ["☀️Sun","⛰️Mountain","⛰️Sunlit Peak"],
-  ["☀️Sun","☁️Cloud","⛅Partly Cloudy"],
-  ["☀️Sun","🌍Earth","🌍Warm Earth"],
-  ["🌊River","💧Water","🌊Deep River"],
-  ["🌊River","🌍Earth","🌊River Delta"],
-  ["🌊River","🔥Fire","♨️Hot Spring"],
-  ["🌊Flood","🌍Earth","🌿Floodplain"],
-  ["🌊Flood","🏠House","🏠Flooded House"],
-  ["❄️Snow","❄️Snow","🧊Ice Sheet"],
-  ["❄️Snow","🌍Earth","🏔️Snowfield"],
-  ["❄️Snow","🌱Plant","❄️Frozen Plant"],
-  ["❄️Blizzard","❄️Blizzard","🌨️Whiteout"],
-  ["❄️Blizzard","🏠House","🏠Snow Covered House"],
-  ["❄️Blizzard","🌍Earth","❄️Tundra"],
-  ["🧊Ice","🧊Ice","❄️Ice Sheet"],
-  ["🧊Ice","🌍Earth","🏔️Glacier"],
-  ["🧊Ice","🌱Plant","❄️Frozen Plant"],
-  ["🌍Earth","💧Water","🌱Life"],
-  ["🌱Life","🌍Earth","👤Human"],
   ["👤Human","📺YouTube","🧑‍🦱Jack"],
-  ["👤Human","📹Video","🧑‍🦱Jack"],
   ["👤Human","🌐Internet","🧑‍🦱Jack"],
-  ["👤Human","🎥Channel","🧑‍🦱Jack"],
   ["👤Human","🎬Content","🧑‍🦱Jack"],
   ["👨‍💻Programmer","📺YouTube","🧑‍🦱Jack"],
-  ["👨‍💻Programmer","📹Video","🧑‍🦱Jack"],
-  ["🎥Channel","📺YouTube","🧑‍🦱Jack"],
   ["📹Video","📺YouTube","🧑‍🦱Jack"],
-  ["👤Human","🔥Viral Video","🧑‍🦱Jack"],
-  ["👤Human","🔥Trending","🧑‍🦱Jack"],
-  ["📺YouTube","⭐YouTuber","🧑‍🦱Jack"],
-  ["📺YouTube","🎬Content","🧑‍🦱Jack"],
-  ["👤Human","🌍Earth","🧑‍🦱Jack"],
-  ["👤Human","🌳Tree","🧑‍🦱Jack"],
-  ["👤Human","🐶Dog","🧑‍🦱Jack"],
-  ["👤Human","🎮Game","🧑‍🦱Jack"],
-  ["👤Human","🌐Web Dev","🧑‍🦱Jack"],
-  ["🎬Series","📺YouTube","🧑‍🦱Jack"],
-  ["📹Video","🌐Internet","🧑‍🦱Jack"],
-  ["👤Human","📦Collection","🧑‍🦱Jack"],
-  ["👤Human","🏆Play Button","🧑‍🦱Jack"],
   ["🧑‍🦱Jack","📺YouTube","🧑‍🦱JackSucksAtLife"],
   ["🧑‍🦱Jack","🌱Life","🧑‍🦱JackSucksAtLife"],
-  ["🧑‍🦱Jack","🎥Channel","🧑‍🦱JackSucksAtLife"],
   ["🧑‍🦱Jack","📹Video","🧑‍🦱JackSucksAtLife"],
   ["🧑‍🦱Jack","🌐Internet","🧑‍🦱JackSucksAtLife"],
   ["🧑‍🦱Jack","▶️Subscriber","🧑‍🦱JackSucksAtLife"],
@@ -1069,85 +967,59 @@ const RAW = [
   ["🧑‍🦱Jack","🏆Play Button","🧑‍🦱JackSucksAtLife"],
   ["📺YouTube","💰Money","🧑MrBeast"],
   ["📺YouTube","🎁Giveaway","🧑MrBeast"],
-  ["📺YouTube","🔥Viral Video","🧑MrBeast"],
-  ["📺YouTube","📈Algorithm","🧑MrBeast"],
   ["💰Money","📹Video","🧑MrBeast"],
   ["🎁Giveaway","📹Video","🧑MrBeast"],
-  ["🎬Content","💰Money","🧑MrBeast"],
   ["⭐YouTuber","💰Money","🧑MrBeast"],
-  ["⭐YouTuber","🎁Giveaway","🧑MrBeast"],
-  ["📺Channel","💰Money","🧑MrBeast"],
   ["📺YouTube","🎮Game","🧑PewDiePie"],
   ["📺YouTube","😂Meme","🧑PewDiePie"],
-  ["📺YouTube","🎬Content","🧑PewDiePie"],
   ["🎮Game","📹Video","🧑PewDiePie"],
   ["🎮Game","🔥Viral Video","🧑PewDiePie"],
   ["😂Meme","📹Video","🧑PewDiePie"],
-  ["🎮Game","⭐YouTuber","🧑PewDiePie"],
-  ["📺Channel","🎮Game","🧑PewDiePie"],
-  ["🔥Trending","🎮Game","🧑PewDiePie"],
-  ["📺YouTube","🔥Trending","🧑PewDiePie"],
   ["🧑‍🦱JackSucksAtLife","😂Running Joke","🧠JSAL Lore"],
   ["🧠JSAL Lore","📹Video","🎞️Inside Joke"],
   ["🎞️Inside Joke","📺YouTube","😂JSAL Meme"],
   ["😂JSAL Meme","📹Video","😂Legendary Clip"],
   ["😂Legendary Clip","🔥Fire","🔥Iconic Moment"],
   ["🔥Iconic Moment","📺YouTube","🎬JSAL Classic"],
-  ["🧑‍🦱JackSucksAtLife","🌱Plant","🌳Wee Wee Bush"],
-  ["🌳Wee Wee Bush","📹Video","😂Wee Wee Clip"],
-  ["🌳Wee Wee Bush","💧Water","🌳Watered Bush"],
-  ["🌳Wee Wee Bush","🌳Wee Wee Bush","🌳Wee Wee Forest"],
   ["🌳Wee Wee Forest","📹Video","😂Wee Wee Saga"],
   ["🌳Wee Wee Forest","🌲Forest","🌲Bush Kingdom"],
-  ["🧑‍🦱JackSucksAtLife","🎨Pink","🎭Pink Wig Promise"],
-  ["🎭Pink Wig Promise","📺YouTube","🎬Legendary Bet"],
-  ["🎭Pink Wig Promise","👥r/jacksucksatlife","😂Pink Wig Meme"],
-  ["🎭Pink Wig Promise","🎭Pink Wig Promise","🎭Double Pink Wig"],
   ["🎭Double Pink Wig","📹Video","😂Ultimate Wig Moment"],
-  ["📢Viral Moment","📺YouTube","💩Turdboi420"],
-  ["💩Turdboi420","📺YouTube","💩Turdboi Channel"],
-  ["💩Turdboi420","🔥Fire","💩Legendary Meme"],
-  ["💩Legendary Meme","💩Turdboi420","💩Ultimate Meme"],
-  ["💩Ultimate Meme","💩Turdboi420","💩Meme King"],
-  ["💩Meme King","📺YouTube","😂Legendary Meme Channel"],
-  ["🧑‍🦱JackSucksAtLife","🐶Dog","🐶Kong"],
-  ["🐶Kong","🐶Dog","🐕Flossy"],
-  ["🐶Kong","📹Video","📹Kong Video"],
-  ["🐕Flossy","📹Video","📹Flossy Video"],
   ["🐶Kong","🦴Bone","🐕Happy Kong"],
-  ["🐕Flossy","🏡Home","🐾Dog Chaos"],
-  ["📺YouTube","👥Community","👥r/jacksucksatlife"],
-  ["👥r/jacksucksatlife","👥r/jacksucksatlife","📌Mega Thread"],
   ["👥r/jacksucksatlife","📹Video","💬Reddit Post"],
   ["💬Reddit Post","🔥Fire","🔥Reddit Drama"],
-  ["🔥Reddit Drama","💬Reddit Post","🔥Reddit War"],
   ["🔥Reddit War","📺YouTube","😂Reddit Reaction"],
-  ["🧑‍🦱JackSucksAtLife","👩Becky","💑Jack & Becky"],
-  ["💑Jack & Becky","🏡Home","🏠Couple Vlog"],
-  ["🧑‍🦱JackSucksAtLife","🧑‍💻Kai","✂️Kai the Editor"],
-  ["✂️Kai the Editor","📹Video","🎬Perfect Cut"],
-  ["🎬Perfect Cut","🔥Fire","🔥Funny Moment"],
-  ["🧑‍🦱JackSucksAtLife","👬Friend","👬Jack & Oscar"],
-  ["🧑‍🦱JackSucksAtLife","📦Collection","📦Play Button Collection"],
-  ["📦Play Button Collection","🥈Silver Play Button","📦More Play Buttons"],
-  ["📦More Play Buttons","🥇Gold Play Button","📦Huge Play Button Collection"],
-  ["📦Huge Play Button Collection","💎Diamond Play Button","📦Ultimate Play Button Shelf"],
-  ["📦Ultimate Play Button Shelf","📹Video","🎥Play Button Tour"],
-  ["📦Play Button Collection","👑YouTube Legend","💎Creator Museum"],
-  ["🧑‍🦱JackSucksAtLife","🎮Game","🎮Skycade"],
-  ["🎮Skycade","🎮Skycade","🎮Skycade 2.0"],
-  ["🎮Skycade","📹Video","🎮Skycade Video"],
-  ["🎮Skycade","👥Community","🎮Skycade Players"],
-  ["🎮Skycade","⛏️Minecraft","🧱Skycade Base"],
-  ["🧱Skycade Base","🏗️Minecraft Build","🏰Skycade Castle"],
-  ["🏰Skycade Castle","📹Video","🎥Castle Build Video"],
   ["🧑‍🦱JackSucksAtLife","🚽Toilet","🎴Toilet Mutant Jack"],
-  ["🧑‍🦱JackSucksAtLife","🎨Pink","🎴Pink Hair Jack"],
-  ["🧑‍🦱JackSucksAtLife","🚲Unicycle","🎴Jack On A Unicycle"],
   ["🧑‍🦱JackSucksAtLife","🤖Robot","🤖AI Jack"],
   ["🤖AI Jack","📺YouTube","🤖AI Channel"],
-  ["🧑‍🦱JackSucksAtLife","🍕Pizza","🍕Jack Orders Pizza"],
   ["🧑‍🦱JackSucksAtLife","☕Coffee","☕Caffeinated Jack"],
+  ["🥛Milk","💧Water","🥛Diluted Milk"],
+  ["🥛Milk","🌬️Wind","💨Spilt Milk"],
+  ["🥛Milk","🥛Milk","🧈Cream"],
+  ["🥛Milk","🍰Cake","🍰Milk Cake"],
+  ["🥛Milk","🍯Honey","🍯Honeyed Milk"],
+  ["🍯Honey","💧Water","🍵Honey Tea"],
+  ["🍯Honey","🔥Fire","🍯Warm Honey"],
+  ["🍯Honey","🌬️Wind","🍯Honey Pot"],
+  ["🍯Honey","🍯Honey","🍯Honeycomb"],
+  ["🍰Cake","💧Water","🍰Soggy Cake"],
+  ["🍰Cake","🌬️Wind","🎂Birthday Cake"],
+  ["🍰Cake","🍰Cake","🎂Wedding Cake"],
+  ["🍰Cake","🍯Honey","🍯Honey Cake"],
+  ["🏺Bottle","🔥Fire","♨️Hot Drink"],
+  ["🏺Bottle","🌬️Wind","🏺Empty Bottle"],
+  ["🏺Bottle","🏺Bottle","📦Bottle Collection"],
+  ["🥤Drink","🔥Fire","☕Hot Drink"],
+  ["🥤Drink","🧊Ice","🧊Iced Drink"],
+  ["🥤Drink","🥤Drink","🍻Drinks"],
+  ["🧀Cheese","🧀Cheese","🧀Cheese Wheel"],
+  ["🧀Cheese","🔥Fire","🍕Melted Cheese"],
+  ["🧀Cheese","🌬️Wind","🧀Aged Cheese"],
+  ["🍞Bread","💧Water","🍞Soggy Bread"],
+  ["🍞Bread","🧀Cheese","🥪Cheese Sandwich"],
+  ["🍞Bread","🍯Honey","🍞Honey Toast"],
+  ["🍞Toast","💧Water","🍞Wet Toast"],
+  ["🍞Toast","🧀Cheese","🥪Cheese Toast"],
+  ["🍞Toast","🍯Honey","🍞Honey Toast"],
 ];
 
 const COMBO_MAP = (() => {
@@ -1156,8 +1028,8 @@ const COMBO_MAP = (() => {
     const na = getName(a).toLowerCase();
     const nb = getName(b).toLowerCase();
     const val = { emoji: getEmoji(r), name: getName(r) };
-    m[na+'+'+nb] = val;
-    m[nb+'+'+na] = val;
+    if (!m[na+'+'+nb]) m[na+'+'+nb] = val;
+    if (!m[nb+'+'+na]) m[nb+'+'+na] = val;
   }
   return m;
 })();
@@ -1367,13 +1239,11 @@ function spawnInstance(data,x,y){
   el._data=data;
   el._clickTime=0;
 
-  
   el.addEventListener('contextmenu',e=>{
     e.preventDefault();
     deleteInstance(el);
   });
 
-  
   el.addEventListener('dblclick',e=>{
     e.preventDefault();
     spawnInstance(data, parseFloat(el.style.left)+30, parseFloat(el.style.top)+30);
@@ -1407,7 +1277,6 @@ function onSidebarMouseUp(e){
   document.querySelectorAll('.dragging-from-sidebar').forEach(el=>el.classList.remove('dragging-from-sidebar'));
   const r=canvas.getBoundingClientRect();
   if(!wasDrag){
-    
     spawnInstance(draggingFromSidebar);
     playSound('pickup');
   } else if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom){
@@ -1482,7 +1351,6 @@ function onTouchMove(e){
 function onTouchEnd(e){
   window.removeEventListener('touchmove',onTouchMove);
   window.removeEventListener('touchend',onTouchEnd);
-  
   if(dragging && isMobile()){
     const t=e.changedTouches[0];
     const r=canvas.getBoundingClientRect();
@@ -1512,7 +1380,6 @@ function endDrag(){
   el.style.zIndex=11;el.style.transition='';el.classList.remove('selected');
   dragging=null;
 
-  
   const sb=document.getElementById('sidebar').getBoundingClientRect();
   const dr=el.getBoundingClientRect();
   const overSidebar=dr.right>sb.left&&dr.left<sb.right&&dr.bottom>sb.top&&dr.top<sb.bottom;
@@ -1548,7 +1415,7 @@ function combine(a, b){
   const isNew = !discovered.find(e => e.name === result.name);
   if(isNew){
     discovered.push({...result, id:nextId++, time:Date.now()});
-    saveDiscovered();   
+    saveDiscovered();
     renderSidebar();
     playSound('discovery');
   }
@@ -1580,7 +1447,6 @@ setTimeout(() => {
   const mob = isMobile();
   const cx = canvas.clientWidth / 2, cy = canvas.clientHeight / 2;
   if(mob){
-    
     const chipW=110, chipH=52, gap=14;
     const startX = cx - chipW - gap/2;
     const startY = Math.max(10, cy/2 - chipH);
