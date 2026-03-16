@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jackfinite Craft</title>
- <link rel="icon"https://www.freepnglogos.com/uploads/infinity-symbol-png/infinity-symbol-infinity-svg-png-icon-download-17.png" type="image/png">
+
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -25,6 +24,7 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  
   .title {
     position: fixed; top: 12px;
     right: calc(var(--sidebar-width) + 14px);
@@ -33,6 +33,7 @@
   .title-main { font-size: 1.75rem; font-weight: 300; letter-spacing: -0.5px; }
   .title-sub  { font-size: 1.75rem; font-weight: 700; }
 
+  
   #canvas {
     position: fixed; top: 0; left: 0;
     width: calc(100% - var(--sidebar-width));
@@ -40,6 +41,7 @@
     overflow: hidden; background: #fff;
   }
 
+  
   .instance {
     position: absolute; display: flex; align-items: center;
     background: var(--instance-bg);
@@ -60,6 +62,7 @@
   .instance-emoji { font-size: 38px; margin-right: 10px; pointer-events: none; }
   .instance-text  { font-size: 34px; pointer-events: none; font-weight: 400; }
 
+  
   #sidebar {
     position: fixed; top: 0; right: 0;
     width: var(--sidebar-width); height: 100vh; height: 100dvh;
@@ -111,6 +114,7 @@
   }
   .search-input::placeholder { color: #aaa; }
 
+  
   .bottom-controls {
     position: fixed; bottom: 10px; right: calc(var(--sidebar-width) + 14px);
     display: flex; gap: 18px; align-items: center; z-index: 5; opacity: 0.7;
@@ -125,6 +129,7 @@
     font-size: 12px; color: #aaa; z-index: 5; pointer-events: none;
   }
 
+  
   .result-toast {
     position: fixed; bottom: 28px; left: 50%;
     transform: translateX(calc(-50% - var(--sidebar-width)/2)) scale(0);
@@ -141,6 +146,7 @@
   .first-disc      { font-size: 0.7rem; color: #888; margin-top: 3px; }
   .first-disc span { background: #fffbe6; border: 1px solid #ffe066; border-radius: 4px; padding: 1px 6px; }
 
+  
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.35);
     display: flex; align-items: center; justify-content: center; z-index: 300;
@@ -167,6 +173,7 @@
   .modal-skip { font-size: 12px; color: #aaa; margin-top: 10px; cursor: pointer; }
   .modal-skip:hover { color: #555; }
 
+  
   .ghost {
     position: fixed; display: flex; align-items: center;
     background: var(--instance-bg-hover); border: 2px solid var(--item-border);
@@ -176,34 +183,41 @@
   .ghost-emoji { font-size: 38px; margin-right: 10px; }
   .ghost-text  { font-size: 34px; font-weight: 400; }
 
+  
   .delete-hint {
     position: fixed; bottom: 10px; left: 50%;
     transform: translateX(calc(-50% - var(--sidebar-width)/2));
     font-size: 11px; color: #bbb; pointer-events: none; z-index: 4;
   }
 
+  
   @media (max-width: 640px) {
     :root { --drawer-height: 42vh; }
 
+    
     .title {
       right: auto; left: 12px; top: 8px; text-align: left;
     }
     .title-main { font-size: 1.1rem; }
     .title-sub  { font-size: 1.1rem; }
 
+    
     #canvas {
       width: 100%;
       height: calc(100dvh - var(--drawer-height));
     }
 
+    
     .instance { height: 52px; padding: 0 10px; border-radius: 8px; }
     .instance-emoji { font-size: 22px; margin-right: 6px; }
     .instance-text  { font-size: 18px; }
 
+    
     .ghost { height: 52px; padding: 0 10px; border-radius: 8px; }
     .ghost-emoji { font-size: 22px; margin-right: 6px; }
     .ghost-text  { font-size: 18px; }
 
+    
     #sidebar {
       top: auto; right: 0; bottom: 0; left: 0;
       width: 100%; height: var(--drawer-height);
@@ -212,6 +226,7 @@
       box-shadow: 0 -4px 16px rgba(0,0,0,0.07);
     }
 
+    
     #sidebar::before {
       content: '';
       display: block; flex-shrink: 0;
@@ -220,6 +235,7 @@
       margin: 8px auto 4px;
     }
 
+    
     .items-wrap {
       flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden;
       padding: 6px 8px; align-content: center;
@@ -229,6 +245,7 @@
 
     .sidebar-item { font-size: 12px; padding: 4px 8px; margin: 3px; flex-shrink: 0; }
 
+    
     .bottom-controls {
       right: 10px;
       bottom: calc(var(--drawer-height) + 6px);
@@ -243,6 +260,7 @@
       font-size: 10px;
     }
 
+    
     .result-toast {
       transform: translateX(-50%) scale(0);
       bottom: calc(var(--drawer-height) + 14px);
@@ -250,6 +268,7 @@
     }
     .result-toast.show { transform: translateX(-50%) scale(1); }
 
+    
     .sort-tab { font-size: 11px; height: 26px; }
     .search-input { height: 34px; font-size: 13px; }
   }
@@ -334,8 +353,8 @@ function getEmoji(s) {
 }
 
 const RAW = [
-  ["💧Water","💧Water","🌊Ocean"],
-  ["🔥Fire","🔥Fire","🌋Volcano"],
+  ["💧Water","💧Water","🌊Ocean"],  
+["🔥Fire","🔥Fire","🌋Volcano"],
   ["🌬️Wind","🌬️Wind","🌪️Tornado"],
   ["🌍Earth","🌍Earth","⛰️Mountain"],
   ["💧Water","🔥Fire","♨️Steam"],
@@ -604,13 +623,12 @@ const RAW = [
   ["🔩Metal","🛠️Tool","⚙️Machine"],
   ["🛠️Tool","🌳Tree","🪚Wood Plank"],
   ["🪚Wood Plank","🛠️Tool","📦Box"],
-  ["🌍Earth","💧Water","🪨Mud"],
   ["🌱Life","💧Water","🌱Plant"],
   ["🔥Fire","🌍Atmosphere","🌞Sun"],
   ["🌍Atmosphere","🔥Fire","🌞Sun"],
   ["💻Computer","📡Signal","🌐Internet"],
   ["🌱Plant","🔥Fire","☕Coffee"],
-  ["👤Human","👤Human","❤️Love"],
+  ["👤Human","👤Fire","❤️Love"],
   ["⚡Electricity","💻Computer","🌐Internet"],
   ["⚙️Machine","⚡Electricity","🤖Robot"],
   ["💧Water","☁️Cloud","🌫️Mist"],
@@ -952,6 +970,7 @@ const RAW = [
   ["🏛️Ruins","🌱Plant","🌿Overgrown Ruins"],
   ["🏛️Ruins","🌍Earth","🏛️Ancient Site"],
   ["🌳Growth","💧Water","🌲Thriving Tree"],
+  ["👤Human","🌱Life","🧑‍🦱Jack"],
   ["👤Human","📺YouTube","🧑‍🦱Jack"],
   ["👤Human","🌐Internet","🧑‍🦱Jack"],
   ["👤Human","🎬Content","🧑‍🦱Jack"],
@@ -1020,6 +1039,7 @@ const RAW = [
   ["🍞Toast","💧Water","🍞Wet Toast"],
   ["🍞Toast","🧀Cheese","🥪Cheese Toast"],
   ["🍞Toast","🍯Honey","🍞Honey Toast"],
+
 ];
 
 const COMBO_MAP = (() => {
@@ -1028,8 +1048,8 @@ const COMBO_MAP = (() => {
     const na = getName(a).toLowerCase();
     const nb = getName(b).toLowerCase();
     const val = { emoji: getEmoji(r), name: getName(r) };
-    if (!m[na+'+'+nb]) m[na+'+'+nb] = val;
-    if (!m[nb+'+'+na]) m[nb+'+'+na] = val;
+    m[na+'+'+nb] = val;
+    m[nb+'+'+na] = val;
   }
   return m;
 })();
@@ -1239,11 +1259,13 @@ function spawnInstance(data,x,y){
   el._data=data;
   el._clickTime=0;
 
+  
   el.addEventListener('contextmenu',e=>{
     e.preventDefault();
     deleteInstance(el);
   });
 
+  
   el.addEventListener('dblclick',e=>{
     e.preventDefault();
     spawnInstance(data, parseFloat(el.style.left)+30, parseFloat(el.style.top)+30);
@@ -1277,6 +1299,7 @@ function onSidebarMouseUp(e){
   document.querySelectorAll('.dragging-from-sidebar').forEach(el=>el.classList.remove('dragging-from-sidebar'));
   const r=canvas.getBoundingClientRect();
   if(!wasDrag){
+    
     spawnInstance(draggingFromSidebar);
     playSound('pickup');
   } else if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom){
@@ -1351,6 +1374,7 @@ function onTouchMove(e){
 function onTouchEnd(e){
   window.removeEventListener('touchmove',onTouchMove);
   window.removeEventListener('touchend',onTouchEnd);
+  
   if(dragging && isMobile()){
     const t=e.changedTouches[0];
     const r=canvas.getBoundingClientRect();
@@ -1380,6 +1404,7 @@ function endDrag(){
   el.style.zIndex=11;el.style.transition='';el.classList.remove('selected');
   dragging=null;
 
+  
   const sb=document.getElementById('sidebar').getBoundingClientRect();
   const dr=el.getBoundingClientRect();
   const overSidebar=dr.right>sb.left&&dr.left<sb.right&&dr.bottom>sb.top&&dr.top<sb.bottom;
@@ -1415,7 +1440,7 @@ function combine(a, b){
   const isNew = !discovered.find(e => e.name === result.name);
   if(isNew){
     discovered.push({...result, id:nextId++, time:Date.now()});
-    saveDiscovered();
+    saveDiscovered();   
     renderSidebar();
     playSound('discovery');
   }
@@ -1447,6 +1472,7 @@ setTimeout(() => {
   const mob = isMobile();
   const cx = canvas.clientWidth / 2, cy = canvas.clientHeight / 2;
   if(mob){
+    
     const chipW=110, chipH=52, gap=14;
     const startX = cx - chipW - gap/2;
     const startY = Math.max(10, cy/2 - chipH);
