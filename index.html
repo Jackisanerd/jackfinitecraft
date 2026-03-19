@@ -14,11 +14,38 @@
     --item-border: #91a8c1;
     --instance-bg: linear-gradient(0deg, #f7feff, #fff 70%);
     --instance-bg-hover: linear-gradient(0deg, #d6fcff, #fff 90%);
+    --bg: #fff;
+    --text: #040404;
+    --sidebar-bg: #fff;
+    --item-bg: #fff;
+    --item-bg-hover: linear-gradient(0deg, #f0feff, #fff 80%);
+    --modal-bg: #fff;
+    --toast-bg: #fff;
   }
+  body.dark {
+    --border: #3a3a3a;
+    --item-border: #4a6a8a;
+    --instance-bg: linear-gradient(0deg, #1a2a3a, #1e1e1e 70%);
+    --instance-bg-hover: linear-gradient(0deg, #1a3a4a, #1e1e1e 90%);
+    --bg: #121212;
+    --text: #e8e8e8;
+    --sidebar-bg: #1a1a1a;
+    --item-bg: #1a1a1a;
+    --item-bg-hover: linear-gradient(0deg, #1a2a3a, #1e1e1e 80%);
+    --modal-bg: #1e1e1e;
+    --toast-bg: #1e1e1e;
+  }
+  .dark-btn {
+    position: fixed; top: 12px; left: 12px;
+    z-index: 10; background: none; border: 1px solid var(--border);
+    border-radius: 8px; cursor: pointer; font-size: 16px;
+    padding: 4px 8px; color: var(--text); transition: background 0.1s;
+  }
+  .dark-btn:hover { background: rgba(128,128,128,0.15); }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: 'Roboto', sans-serif;
-    background: #fff; color: #040404;
+    background: var(--bg); color: var(--text);
     height: 100vh; height: 100dvh;
     overflow: hidden; user-select: none;
     -webkit-tap-highlight-color: transparent;
@@ -38,7 +65,7 @@
     position: fixed; top: 0; left: 0;
     width: calc(100% - var(--sidebar-width));
     height: 100vh; height: 100dvh;
-    overflow: hidden; background: #fff;
+    overflow: hidden; background: var(--bg);
   }
 
   
@@ -66,7 +93,7 @@
   #sidebar {
     position: fixed; top: 0; right: 0;
     width: var(--sidebar-width); height: 100vh; height: 100dvh;
-    border-left: 1px solid var(--border); background: #fff;
+    border-left: 1px solid var(--border); background: var(--sidebar-bg);
     display: flex; flex-direction: column; z-index: 10; overflow: hidden;
   }
   .items-wrap {
@@ -77,13 +104,13 @@
   .items-wrap::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
   .sidebar-item {
     display: inline-flex; align-items: center; gap: 5px;
-    background: #fff; border: 1px solid var(--border); border-radius: 5px;
+    background: var(--item-bg); border: 1px solid var(--border); border-radius: 5px;
     padding: 5px 10px; margin: 4px; font-size: 13.5px;
     cursor: grab; white-space: nowrap; transition: background 0.1s;
     touch-action: none;
   }
   .sidebar-item:hover {
-    background: linear-gradient(0deg, #f0feff, #fff 80%);
+    background: var(--item-bg-hover);
     border-color: var(--item-border);
   }
   .sidebar-item.dragging-from-sidebar { opacity: 0.4; }
@@ -98,7 +125,7 @@
     font-size: 13px; height: 30px;
     border: 1px solid var(--border); border-bottom: none;
     border-radius: 8px 8px 0 0; transform: translateY(1px);
-    background: #fff; color: #444;
+    background: var(--item-bg); color: #444;
   }
   .sort-tab:hover  { background: #f5feff; }
   .sort-tab.active { background: linear-gradient(0deg, #d6fcff, #fff 90%); }
@@ -110,7 +137,7 @@
   .search-input {
     width: 100%; border: none; outline: none;
     font-size: 14px; font-family: 'Roboto', sans-serif;
-    height: 40px; padding: 0 12px 0 34px; color: #040404; background: transparent;
+    height: 40px; padding: 0 12px 0 34px; color: var(--text); background: transparent;
   }
   .search-input::placeholder { color: #aaa; }
 
@@ -133,7 +160,7 @@
   .result-toast {
     position: fixed; bottom: 28px; left: 50%;
     transform: translateX(calc(-50% - var(--sidebar-width)/2)) scale(0);
-    background: #fff; border: 1px solid var(--item-border); border-radius: 10px;
+    background: var(--toast-bg); border: 1px solid var(--item-border); border-radius: 10px;
     padding: 10px 22px; text-align: center; z-index: 200;
     box-shadow: 0 4px 20px rgba(0,0,0,0.1);
     transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
@@ -152,7 +179,7 @@
     display: flex; align-items: center; justify-content: center; z-index: 300;
   }
   .modal {
-    background: #fff; border: 1px solid var(--border); border-radius: 12px;
+    background: var(--modal-bg); border: 1px solid var(--border); border-radius: 12px;
     padding: 28px 32px; max-width: 360px; width: 90%; text-align: center;
     box-shadow: 0 8px 32px rgba(0,0,0,0.12);
   }
@@ -276,6 +303,8 @@
 </head>
 <body>
 
+<button class="dark-btn" id="darkBtn">🌙</button>
+
 <div class="title">
   <div class="title-main">Jackfinite</div>
   <div class="title-sub">Craft</div>
@@ -305,7 +334,6 @@
   <div class="first-disc" id="rFirst" style="display:none"></div>
 </div>
 <div class="item-count" id="itemCount">4 elements</div>
-<div class="delete-hint" id="deleteHint">right-click or drag to sidebar to delete &nbsp;·&nbsp; double-click to duplicate</div>
 
 <div class="bottom-controls">
   <button class="ctrl-btn" id="soundBtn">🔊</button>
@@ -1043,7 +1071,6 @@ const RAW = [
   ["🍞Toast","💧Water","🍞Wet Toast"],
   ["🍞Toast","🧀Cheese","🥪Cheese Toast"],
   ["🍞Toast","🍯Honey","🍞Honey Toast"],
-
 ];
 
 const COMBO_MAP = (() => {
@@ -1470,6 +1497,15 @@ function combine(a, b){
   canvasEls = canvasEls.filter(e => e !== a && e !== b);
   spawnInstance(result, mx, my);
 }
+
+const darkBtn = document.getElementById('darkBtn');
+const savedDark = localStorage.getItem('jcraft_dark');
+if (savedDark === '1') { document.body.classList.add('dark'); darkBtn.textContent = '☀️'; }
+darkBtn.addEventListener('click', () => {
+  const on = document.body.classList.toggle('dark');
+  darkBtn.textContent = on ? '☀️' : '🌙';
+  localStorage.setItem('jcraft_dark', on ? '1' : '0');
+});
 
 renderSidebar();
 setTimeout(() => {
